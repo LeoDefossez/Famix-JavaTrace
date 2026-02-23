@@ -20,7 +20,7 @@ Class {
 		'stringReference',
 		'field',
 		'arrayValue',
-		'invocation'
+		'method'
 	],
 	#category : 'Famix-JavaTrace-Generator',
 	#package : 'Famix-JavaTrace-Generator'
@@ -42,13 +42,6 @@ FamixJavaTraceGenerator class >> prefix [
 FamixJavaTraceGenerator class >> submetamodels [
 
 	^ { FamixJavaGenerator }
-]
-
-{ #category : 'definition' }
-FamixJavaTraceGenerator >> defineClassExternalDependencies [ 
-
-	"Famix Java dependencies"
-	invocation := self remoteEntity: #Invocation withPrefix: #FamixJava.
 ]
 
 { #category : 'definition' }
@@ -83,9 +76,9 @@ FamixJavaTraceGenerator >> defineClasses [
 	assignationRight := builder newClassNamed: #AssignationRight.
 	argument := builder newClassNamed: #Argument.
 	receiver := builder newClassNamed: #Receiver.
-	
+
 	self defineClassValueModel.
-	self defineClassExternalDependencies
+	self defineRemoteEntities
 ]
 
 { #category : 'definition' }
@@ -173,7 +166,7 @@ FamixJavaTraceGenerator >> defineRelations [
 	self defineRelationsValueModel.
 
 	trace <>-* traceElement.
-	traceMethod *- invocation.
+	traceMethod *- method.
 	traceMethod <>- receiver.
 	traceMethod -* argument.
 
@@ -189,6 +182,12 @@ FamixJavaTraceGenerator >> defineRelationsValueModel [
 	(arrayReference property: #elements) -* (arrayValue property: #parent).
 
 	(tValueContainer property: #value) *- (value property: #usage)
+]
+
+{ #category : 'definition' }
+FamixJavaTraceGenerator >> defineRemoteEntities [
+
+	method := self remoteEntity: #Method withPrefix: #FamixJava.
 ]
 
 { #category : 'definition' }
