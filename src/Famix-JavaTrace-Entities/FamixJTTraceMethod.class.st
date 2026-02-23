@@ -11,7 +11,7 @@
 | Relation | Origin | Opposite | Type | Comment |
 |---|
 | `arguments` | `FamixJTTraceMethod` | `traceMethod` | `FamixJTArgument` | |
-| `invocation` | `FamixJTTraceMethod` | `traceMethods` | `FamixJavaInvocation` | |
+| `method` | `FamixJTTraceMethod` | `traceMethods` | `FamixJavaMethod` | |
 
 
 ## Properties
@@ -66,22 +66,6 @@ FamixJTTraceMethod >> arguments: anObject [
 	arguments value: anObject
 ]
 
-{ #category : 'accessing' }
-FamixJTTraceMethod >> invocation [
-	"Relation named: #invocation type: #FamixJavaInvocation opposite: #traceMethods"
-
-	<generated>
-	<FMProperty: #invocation type: #FamixJavaInvocation opposite: #traceMethods>
-	^ self attributeAt: #invocation ifAbsent: [ nil ]
-]
-
-{ #category : 'accessing' }
-FamixJTTraceMethod >> invocation: anObject [
-
-	<generated>
-	self attributeAt: #invocation put: (FMMultivalueLink on: self update: #traceMethods from: self invocation to: anObject).
-]
-
 { #category : 'navigation' }
 FamixJTTraceMethod >> invokedMethod [
 
@@ -105,6 +89,22 @@ FamixJTTraceMethod >> isArgsAccessible [
 FamixJTTraceMethod >> isArgsAccessible: anObject [
 	<generated>
 	isArgsAccessible := anObject
+]
+
+{ #category : 'accessing' }
+FamixJTTraceMethod >> method [
+	"Relation named: #method type: #FamixJavaMethod opposite: #traceMethods"
+
+	<generated>
+	<FMProperty: #method type: #FamixJavaMethod opposite: #traceMethods>
+	^ self attributeAt: #method ifAbsent: [ nil ]
+]
+
+{ #category : 'accessing' }
+FamixJTTraceMethod >> method: anObject [
+
+	<generated>
+	self attributeAt: #method put: (FMMultivalueLink on: self update: #traceMethods from: self method to: anObject).
 ]
 
 { #category : 'accessing' }
