@@ -18,7 +18,7 @@ FamixJTArgument >> parameter [
 	|  arguments parameters |
 	
 	arguments := self traceMethod arguments.
-	parameters := self traceMethod invokedMethod parameters.
+	parameters := self traceMethod method parameters.
 	
 	arguments size = parameters size ifFalse: [ self error: 'Method does not have the same number of arguments and parameter' ].
 	

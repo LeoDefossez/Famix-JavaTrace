@@ -7,9 +7,8 @@ Class {
 	#instVars : [
 		'model'
 	],
-	#category : 'Famix-JavaTrace-Entities-Tests-Entities',
-	#package : 'Famix-JavaTrace-Entities-Tests',
-	#tag : 'Entities'
+	#category : 'Famix-JavaTrace-Entities-Tests',
+	#package : 'Famix-JavaTrace-Entities-Tests'
 }
 
 { #category : 'running' }
@@ -22,20 +21,18 @@ FamixJTArgumentTest >> setUp [
 { #category : 'tests' }
 FamixJTArgumentTest >> testParameterErrorWhenMoreArgumentThanParameter [
 
-	| traceMethod method invocation parameter argument argument2 |
+	| traceMethod method parameter argument argument2 |
 	"Init variables"
 	argument := model newArgument.
 	argument2 := model newArgument.
 	traceMethod := model newTraceMethod.
 	method := model newMethodNamed: 'main'.
-	invocation := model newInvocation.
 	parameter := model newParameterNamed: 'args'.
 
 	"Connect elements"
 	traceMethod addArgument: argument.
 	traceMethod addArgument: argument2.
-	traceMethod invocation: invocation.
-	invocation addCandidate: method.
+	traceMethod method: method.
 	method addParameter: parameter.
 
 	self should: [ argument parameter ] raise: Error
@@ -44,19 +41,17 @@ FamixJTArgumentTest >> testParameterErrorWhenMoreArgumentThanParameter [
 { #category : 'tests' }
 FamixJTArgumentTest >> testParameterErrorWhenMoreParameterThanArgument [
 
-	| traceMethod method invocation parameter argument parameter2 |
+	| traceMethod method parameter argument parameter2 |
 	"Init variables"
 	argument := model newArgument.
 	traceMethod := model newTraceMethod.
 	method := model newMethodNamed: 'main'.
-	invocation := model newInvocation.
 	parameter := model newParameterNamed: 'args'.
 	parameter2 := model newParameterNamed: 'args2'.
 
 	"Connect elements"
 	traceMethod addArgument: argument.
-	traceMethod invocation: invocation.
-	invocation addCandidate: method.
+	traceMethod method: method.
 	method addParameter: parameter.
 	method addParameter: parameter2.
 
@@ -66,18 +61,16 @@ FamixJTArgumentTest >> testParameterErrorWhenMoreParameterThanArgument [
 { #category : 'tests' }
 FamixJTArgumentTest >> testParameterIsOk [
 
-	| traceMethod method invocation parameter argument |
+	| traceMethod method  parameter argument |
 	"Init variables"
 	argument := model newArgument.
 	traceMethod := model newTraceMethod.
 	method := model newMethodNamed: 'main'.
-	invocation := model newInvocation.
 	parameter := model newParameterNamed: 'args'.
 
 	"Connect elements"
 	traceMethod addArgument: argument.
-	traceMethod invocation: invocation.
-	invocation addCandidate: method.
+	traceMethod method: method.
 	method addParameter: parameter.
 
 	self assert: argument parameter equals: parameter
@@ -86,21 +79,19 @@ FamixJTArgumentTest >> testParameterIsOk [
 { #category : 'tests' }
 FamixJTArgumentTest >> testParameterIsOkWhenMultipleArguments [
 
-	| traceMethod method invocation parameter1 argument1 argument2 parameter2 |
+	| traceMethod method  parameter1 argument1 argument2 parameter2 |
 	"Init variables"
 	argument1 := model newArgument.
 	argument2 := model newArgument.
 	traceMethod := model newTraceMethod.
 	method := model newMethodNamed: 'main'.
-	invocation := model newInvocation.
 	parameter1 := model newParameterNamed: 'args'.
 	parameter2 := model newParameterNamed: 'args2'.
 
 	"Connect elements"
 	traceMethod addArgument: argument1.
 	traceMethod addArgument: argument2.
-	traceMethod invocation: invocation.
-	invocation addCandidate: method.
+	traceMethod method: method.
 	method addParameter: parameter1.
 	method addParameter: parameter2.
 

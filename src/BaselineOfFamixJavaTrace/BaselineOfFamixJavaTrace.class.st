@@ -9,9 +9,12 @@ Class {
 BaselineOfFamixJavaTrace >> baseline: spec [
 
 	<baseline>
-	spec for: #common do: [
-			spec
-				package: 'Famix-JavaTrace-Generator';
-				package: 'Famix-JavaTrace-Entities';
-				package: 'Famix-JavaTrace-Entities-Tests' with: [ spec requires: 'Famix-CallStack-Entities' ] ]
+	spec
+		for: #common do: [
+				spec
+					package: 'Famix-JavaTrace-Generator';
+					package: 'Famix-JavaTrace-Entities';
+					package: 'Famix-JavaTrace-Entities-Extensions' with: [ spec requires: 'Famix-CallStack-Entities' ] ];
+		package: 'Famix-JavaTrace-Entities-Tests'
+		with: [ spec requires: { 'Famix-CallStack-Entities'. 'Famix-JavaTrace-Entities-Extensions' } ]
 ]
