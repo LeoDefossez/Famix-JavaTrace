@@ -33,21 +33,6 @@ FamixJTArgument class >> annotation [
 	^ self
 ]
 
-{ #category : 'as yet unclassified' }
-FamixJTArgument >> parameter [
-
-	|  arguments parameters |
-	
-	arguments := self traceMethod arguments.
-	parameters := self traceMethod invokedMethod parameters.
-	
-	arguments size = parameters size ifFalse: [ self error: 'Method does not have the same number of arguments and parameter' ].
-	
-	^ parameters at: (arguments indexOf: self)
-	
-	
-]
-
 { #category : 'accessing' }
 FamixJTArgument >> traceMethod [
 	"Relation named: #traceMethod type: #FamixJTTraceMethod opposite: #arguments"

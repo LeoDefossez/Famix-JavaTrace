@@ -66,17 +66,6 @@ FamixJTTraceMethod >> arguments: anObject [
 	arguments value: anObject
 ]
 
-{ #category : 'navigation' }
-FamixJTTraceMethod >> invokedMethod [
-
-	<derived>
-	| candidates |
-	candidates := self invocation candidates.
-	candidates size = 1 ifFalse: [ self error: 'Number of candidates should be 1 but is ' , candidates size asString ].
-
-	^ candidates first
-]
-
 { #category : 'accessing' }
 FamixJTTraceMethod >> isArgsAccessible [
 
