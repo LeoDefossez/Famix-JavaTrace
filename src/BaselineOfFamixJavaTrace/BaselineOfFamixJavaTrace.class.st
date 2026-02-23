@@ -13,5 +13,10 @@ BaselineOfFamixJavaTrace >> baseline: spec [
 			spec
 				package: 'Famix-JavaTrace-Generator';
 				package: 'Famix-JavaTrace-Entities';
-				package: 'Famix-JavaTrace-Entities-Tests' with: [ spec requires: 'Famix-JavaTrace-Entities' ] ]
+				package: 'Famix-JavaTrace-Entities-Extensions' with: [ spec requires: 'Famix-JavaTrace-Entities' ];
+				package: 'Famix-JavaTrace-Entities-Tests'
+				with: [ spec requires: { 'Famix-JavaTrace-Entities'. 'Famix-JavaTrace-Entities-Extensions' } ];
+				package: 'Famix-JavaTrace-Importer'
+				with: [ spec requires: { 'Famix-JavaTrace-Entities'. 'Famix-JavaTrace-Entities-Extensions' } ];
+				package: 'Famix-JavaTrace-Importer-Tests' with: [ spec requires: 'Famix-JavaTrace-Importer' ] ]
 ]
