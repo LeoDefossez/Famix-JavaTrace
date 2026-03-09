@@ -146,17 +146,17 @@ FamixJavaTraceGenerator >> defineProperties [
 
 { #category : 'definition' }
 FamixJavaTraceGenerator >> definePropertiesValueModel [
-	
+
 	primitiveValue property: #value type: #Object.
 	stringReference property: #value type: #String.
 
 	objectReference property: #uniqueID type: #Number.
 
-	
-	field property: #isAtMaxDepth type: #Boolean defaultValue: false .
-	arrayValue property: #isAtMaxDepth type: #Boolean defaultValue: false .
+
+	field property: #isAtMaxDepth type: #Boolean defaultValue: false.
+	arrayReference property: #isAtMaxDepth type: #Boolean defaultValue: false.
 	field property: #isAccessible type: #Boolean defaultValue: true.
-	classReference property: #isPrepared type: #Boolean defaultValue: true.
+	classReference property: #isPrepared type: #Boolean defaultValue: true
 ]
 
 { #category : 'definition' }
