@@ -334,13 +334,7 @@ JavaTraceJsonReader >> instantiateReferenceEntityFrom: aDictionary [
 			refered at: #fields ifPresent: [ :fields | ^ model newClassReference ].
 			refered at: #elements ifPresent: [ :elements | ^ model newArrayReference ] ].
 
-	refered isString ifTrue: [
-			^ (refered sameAs: '<<CLASS_NOT_PREPARED>>')
-				  ifTrue: [
-						  model newClassReference
-							  isPrepared: false;
-							  yourself ]
-				  ifFalse: [ model newStringReference ] ].
+	refered isString ifTrue: [ ^ model newStringReference ].
 	Error signal: 'Should either be String or dictionary'
 ]
 

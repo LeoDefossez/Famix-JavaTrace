@@ -1,14 +1,19 @@
 Extension { #name : 'FamixJTClassReference' }
 
 { #category : '*Famix-JavaTrace-Importer' }
-FamixJTClassReference >> fillFrom: aCollection reader: aCSReader [
+FamixJTClassReference >> fillFrom: aDictionary reader: aCSReader [
 
-	aCollection isString ifTrue: [
-			(aCollection sameAs: '<<CLASS_NOT_PREPARED>>')
-				ifTrue: [ ^ self isPrepared: false ]
-				ifFalse: [ Error signal: 'Uneccepted String in class refrence import :' , aCollection ] ].
+	aDictionary at: #isPrepared ifPresent: [ :value |
+			value ifFalse: [
+					aDictionary
+						at: #fields
+						ifPresent: [ :elems |
+						elems ifNotEmpty: [ Error signal: 'ClassReference is not prepared but still have fields informations' ] ].
+					^ self
+						  isPrepared: false;
+						  yourself ] ].
 
-	(aCollection at: 'fields')
+	(aDictionary at: 'fields')
 		collect: [ :fieldDict | aCSReader createField: (fieldDict at: #field) ]
 		thenDo: [ :object | self addField: object ].
 	^ self
