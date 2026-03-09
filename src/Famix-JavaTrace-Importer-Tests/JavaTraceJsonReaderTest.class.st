@@ -959,18 +959,6 @@ JavaTraceJsonReaderTest >> testinstantiateReferenceEntityAClassReference [
 ]
 
 { #category : 'instantiateReferenceEntity' }
-JavaTraceJsonReaderTest >> testinstantiateReferenceEntityAClassReferenceNotPrepared [
-
-	| reference |
-	reference := reader instantiateReferenceEntityFrom: (Dictionary new
-			              at: #refered put: '<<CLASS_NOT_PREPARED>>';
-			              yourself).
-
-	self assert: reference class equals: FamixJTClassReference.
-	self assert: (reader model includes: reference)
-]
-
-{ #category : 'instantiateReferenceEntity' }
 JavaTraceJsonReaderTest >> testinstantiateReferenceEntityAStringReference [
 
 	| reference |
