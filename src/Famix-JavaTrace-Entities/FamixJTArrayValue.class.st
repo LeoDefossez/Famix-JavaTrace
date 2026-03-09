@@ -9,12 +9,6 @@
 | `value` | `FamixJTTValueContainer` | `usage` | `FamixJTValue` | |
 
 
-## Properties
-======================
-
-| Name | Type | Default value | Comment |
-|---|
-| `isAtMaxDepth` | `Boolean` | false | |
 
 "
 Class {
@@ -23,7 +17,6 @@ Class {
 	#traits : 'FamixJTTValueContainer',
 	#classTraits : 'FamixJTTValueContainer classTrait',
 	#instVars : [
-		'#isAtMaxDepth => FMProperty defaultValue: false',
 		'#parent => FMOne type: #FamixJTArrayReference opposite: #elements'
 	],
 	#category : 'Famix-JavaTrace-Entities-Entities',
@@ -38,20 +31,6 @@ FamixJTArrayValue class >> annotation [
 	<package: #'Famix-JavaTrace-Entities'>
 	<generated>
 	^ self
-]
-
-{ #category : 'accessing' }
-FamixJTArrayValue >> isAtMaxDepth [
-
-	<FMProperty: #isAtMaxDepth type: #Boolean defaultValue: false>
-	<generated>
-	^ isAtMaxDepth ifNil: [ isAtMaxDepth := false ]
-]
-
-{ #category : 'accessing' }
-FamixJTArrayValue >> isAtMaxDepth: anObject [
-	<generated>
-	isAtMaxDepth := anObject
 ]
 
 { #category : 'accessing' }

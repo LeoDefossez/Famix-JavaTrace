@@ -207,6 +207,63 @@ JavaTraceJsonReaderTest >> testCreateFieldValueWithNilValueWhileInaccessible [
 	self should: [ field := reader createField: fieldDict ] raise: Error.
 ]
 
+{ #category : 'createField' }
+JavaTraceJsonReaderTest >> testCreateFieldWithMaxDepthFalseAndValue [
+
+	| fieldDict field |
+	fieldDict := JTStructureCreator simpleFieldDict.
+	fieldDict at: #atMaxDepth put: false.
+	fieldDict at: #value put: JTStructureCreator simpleValueDict.
+
+	self shouldnt: [ field := reader createField: fieldDict ] raise: Error
+]
+
+{ #category : 'createField' }
+JavaTraceJsonReaderTest >> testCreateFieldWithMaxDepthTrueAndNoValueAccessible [
+
+	| fieldDict field |
+	fieldDict := JTStructureCreator simpleFieldDict.
+	fieldDict at: #atMaxDepth put: true.
+	fieldDict at: #accessible put: true.
+	fieldDict at: #value put: nil.
+
+	self shouldnt: [ field := reader createField: fieldDict ] raise: Error
+]
+
+{ #category : 'createField' }
+JavaTraceJsonReaderTest >> testCreateFieldWithMaxDepthTrueAndNoValueNotAccessible [
+
+	| fieldDict field |
+	fieldDict := JTStructureCreator simpleFieldDict.
+	fieldDict at: #atMaxDepth put: true.
+	fieldDict at: #accessible put: false.
+	fieldDict at: #value put: nil.
+
+	self shouldnt: [ field := reader createField: fieldDict ] raise: Error
+]
+
+{ #category : 'createField' }
+JavaTraceJsonReaderTest >> testCreateFieldWithMaxDepthTrueAndValue [
+
+	| fieldDict field |
+	fieldDict := JTStructureCreator simpleFieldDict.
+	fieldDict at: #atMaxDepth put: true.
+	fieldDict at: #value put: JTStructureCreator simpleValueDict.
+
+	self should: [ field := reader createField: fieldDict ] raise: Error
+]
+
+{ #category : 'createField' }
+JavaTraceJsonReaderTest >> testCreateFieldWithoutMaxDepth [
+
+	| fieldDict field |
+	fieldDict := JTStructureCreator simpleFieldDict.
+	fieldDict removeKey: #atMaxDepth ifAbsent: [ "nothing" ].
+
+
+	self shouldnt: [ field := reader createField: fieldDict ] raise: Error
+]
+
 { #category : 'createMethod' }
 JavaTraceJsonReaderTest >> testCreateMethodCreateTwoMethodIfDifferentNameButSameType [
 	"Create two time the same method, and check if the is only one"
@@ -889,35 +946,6 @@ JavaTraceJsonReaderTest >> testReadValueIndependentstrueAndError [
 			elem2 }.
 
 	self should: [ reader read: fileDict ] raise: Error
-]
-
-{ #category : 'fillValueCheckingMaxDepth' }
-JavaTraceJsonReaderTest >> testfillValueCheckingMaxDepthAtMaxDepth [
-	| aField |
-	aField := reader model newField.
-	reader fillValueCheckingMaxDepthOn: aField with: '<<MAX_DEPTH_REACHED>>'.
-
-	self assert: aField isAtMaxDepth 
-]
-
-{ #category : 'fillValueCheckingMaxDepth' }
-JavaTraceJsonReaderTest >> testfillValueCheckingMaxDepthWithNil [
-
-	| aField |
-	aField := reader model newField.
-	reader fillValueCheckingMaxDepthOn: aField with: nil.
-
-	self assert: aField value isNil
-]
-
-{ #category : 'fillValueCheckingMaxDepth' }
-JavaTraceJsonReaderTest >> testfillValueCheckingWithAString [
-	| aField |
-	aField := reader model newField.
-	self should:[reader fillValueCheckingMaxDepthOn: aField with: 'imJustAString'] raise: Error.
-	self should:[reader fillValueCheckingMaxDepthOn: aField with: '<<imJustAString>>'] raise: Error.
-
-	
 ]
 
 { #category : 'instantiateReferenceEntity' }

@@ -81,7 +81,8 @@ JavaTraceJsonReader >> createArguments: aDictionary forTraceMethod: aTraceMethod
 { #category : 'instance creation' }
 JavaTraceJsonReader >> createArrayValueWith: aCollection [
 	"Instantiate an ArrayValue"
-	^ self fillValueCheckingMaxDepthOn: model newArrayValue with: aCollection.
+
+	^ model newArrayValue value: (self createValueWith: aCollection)
 ]
 
 { #category : 'instance creation' }
@@ -104,25 +105,33 @@ JavaTraceJsonReader >> createClassNamed: aString [
 JavaTraceJsonReader >> createField: aDictionary [
 	"Instantiate a field from a ClassReference"
 
-	| field valueDict accessible |
+	| field valueDict accessible atMaxDepth hasValueKey isValid |
 	"Default: accessible if not specified"
 	accessible := aDictionary at: #accessible ifAbsent: [ true ].
+	atMaxDepth := aDictionary at: #atMaxDepth ifAbsent: [ false ].
+	hasValueKey := aDictionary includesKey: #value.
 	"Default: nil if not specified"
-	valueDict := aDictionary at: #value ifAbsent: nil.
+	valueDict := aDictionary at: #value ifAbsent: [ nil ].
 
-	"Checking if the field has a valid construction
+	"Checking if the field has a valid construction with accessibility
 	Should be either
-	- accessible and have a value
-	- inaccessible and dont have a value"
-	accessible ~= (aDictionary includesKey: #value) ifTrue: [
-		Error signal: 'Field has not a valid construction' ].
+	- accessible and not at max depth and have a value
+	- inaccessible or at max depth, and dont have a value"
+	isValid := atMaxDepth
+		ifTrue: [ hasValueKey not or: [ valueDict isNil ] ]
+		ifFalse: [ accessible = hasValueKey ].
 
+	isValid ifFalse: [ Error signal: 'Field has not a valid construction' ].
+	
 	field := model newField
-		         name: (aDictionary at: #name);
-		         isAccessible: accessible;
-		         yourself.
+		 name: (aDictionary at: #name);
+		 isAccessible: accessible;
+		 isAtMaxDepth: atMaxDepth;
+		 yourself.
 
-	^ self fillValueCheckingMaxDepthOn: field with: valueDict
+	atMaxDepth ifFalse: [
+		valueDict ifNil: [ field value: nil ] ifNotNil: [ field value: (self createValueWith: valueDict) ] ].
+	^ field
 ]
 
 { #category : 'instance creation' }
@@ -249,20 +258,21 @@ JavaTraceJsonReader >> createValueReference: aDictionary [
 	"Check alreadyFound case"
 	(aDictionary at: #alreadyFound ifAbsent: [ false ]) ifTrue: [
 			^ createdReference at: uniqueId ifAbsent: [
-				  Error signal:
-					  'The objectReference with ID: ' , uniqueId asString , ' is indicated to be already found, but is not in the saved references' ] ].
+					  Error signal: 'The objectReference with ID: ' , uniqueId asString
+						  , ' is indicated to be already found, but is not in the saved references' ] ].
 
 	"Ensure no duplicate creation"
 	reference := createdReference
 		             at: uniqueId
 		             ifPresent: [
-		             Error signal:
-			             'Trying to create an object with ID: ' , uniqueId asString , ' while an existing ObjectReference already has this ID' ]
+				             Error signal:
+					             'Trying to create an object with ID: ' , uniqueId asString
+					             , ' while an existing ObjectReference already has this ID' ]
 		             ifAbsentPut: [ (self instantiateReferenceEntityFrom: aDictionary) uniqueID: uniqueId ].
 
 	"Fill reference"
 	reference fillFrom: (aDictionary at: #refered) reader: self.
-	
+
 	typeName := aDictionary at: #type.
 	"Determine type"
 	type := (typeName includesSubstring: '.')
@@ -289,20 +299,6 @@ JavaTraceJsonReader >> createValueWith: aDictionnary [
 JavaTraceJsonReader >> defaultPackage [
 
 	^ defaultPackage ifNil: [ defaultPackage := model newPackageNamed: '<Default Package>' ]
-]
-
-{ #category : 'as yet unclassified' }
-JavaTraceJsonReader >> fillValueCheckingMaxDepthOn: aCSObject with: aCollection [
-
-	^ aCollection
-		  ifNotNil: [
-				  aCollection isString
-					  ifTrue: [
-							  (aCollection sameAs: '<<MAX_DEPTH_REACHED>>')
-								  ifTrue: [ aCSObject isAtMaxDepth: true ]
-								  ifFalse: [ Error signal: 'Uneccepted String in field import :' , aCollection ] ]
-					  ifFalse: [ aCSObject value: (self createValueWith: aCollection) ] ]
-		  ifNil: [ aCSObject ]
 ]
 
 { #category : 'initialization' }
