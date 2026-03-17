@@ -82,12 +82,17 @@ JavaTraceJsonReader >> createArguments: aDictionary forTraceMethod: aTraceMethod
 JavaTraceJsonReader >> createArrayValueWith: aCollection [
 	"Instantiate an ArrayValue"
 
-	^ model newArrayValue value: (self createValueWith: aCollection)
+	^ model newArrayValue value: (aCollection ifNotNil: [ self createValueWith: aCollection ])
 ]
 
 { #category : 'instance creation' }
 JavaTraceJsonReader >> createClassNamed: aString [
-	"Instantiate a FamixJavaClass with the given name"
+
+	^ self createClassNamed: aString withType: FamixJavaClass
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> createClassNamed: aString withType: aType [
 
 	| sequence container name |
 	sequence := (aString removeSuffix: '[]') splitOn: $..
@@ -95,7 +100,7 @@ JavaTraceJsonReader >> createClassNamed: aString [
 
 	container := self createPackageFromStringCollection: sequence allButLast.
 	^ createdClasses at: name ifAbsentPut: [
-			  (model newClassNamed: name)
+			  (model add: (aType named: name))
 				  typeContainer: container;
 				  isStub: true;
 				  yourself ]
@@ -180,7 +185,14 @@ JavaTraceJsonReader >> createParameters: anArray [
 	"Instantiates all parameters of a method"
 
 	^ anArray collect: [ :param |
-		  self createTypingFor: (model newParameterNamed: (param at: #name)) with: (self createClassNamed: (param at: #type)) ]
+			  
+			  self createTypingFor: (model newParameterNamed: (param at: #name)) with: (self createType: (param at: #type)) ]
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> createParametricClassNamed: aString [
+
+	^ self createClassNamed: aString withType: FamixJavaParametricClass
 ]
 
 { #category : 'instance creation' }
@@ -241,6 +253,18 @@ JavaTraceJsonReader >> createTraceElement: aDictionary [
 ]
 
 { #category : 'as yet unclassified' }
+JavaTraceJsonReader >> createType: aCollection [
+
+	aCollection isString ifTrue: [ ^ self createPrimitiveType: aCollection ].
+	aCollection isDictionary ifTrue: [
+			aCollection
+				at: #isParametric
+				ifPresent: [ :bool | bool ifTrue: [ ^ self createParametricClassNamed: (aCollection at: #name) ] ].
+			^ self createClassNamed: (aCollection at: #name) ].
+	self error: 'should either be a String for a primitive type or a dictionary for a class'
+]
+
+{ #category : 'as yet unclassified' }
 JavaTraceJsonReader >> createTypingFor: anObject with: type [
 
 	^ anObject
@@ -273,11 +297,9 @@ JavaTraceJsonReader >> createValueReference: aDictionary [
 	"Fill reference"
 	reference fillFrom: (aDictionary at: #refered) reader: self.
 
-	typeName := aDictionary at: #type.
-	"Determine type"
-	type := (typeName includesSubstring: '.')
-		        ifTrue: [ self createClassNamed: typeName ]
-		        ifFalse: [ self createPrimitiveType: typeName ].
+
+
+	type := self createType: (aDictionary at: #type).
 
 	self createTypingFor: reference with: type.
 
@@ -318,7 +340,7 @@ JavaTraceJsonReader >> instantiateMethodFrom: aDictionnary [
 	method := (model newMethodNamed: (aDictionnary at: #name)) isStub: true.
 
 	method isClassSide: (aDictionnary at: #isClassSide).
-	method parentType: (self createClassNamed: (aDictionnary at: #parentType)).
+	method parentType: (self createType: (aDictionnary at: #parentType)).
 	method signature: (aDictionnary at: #signature).
 
 	(self createParameters: (aDictionnary at: #parameters)) do: [ :param | method addParameter: param ].

@@ -20,6 +20,22 @@ JTStructureCreator class >> simpleArrayReferenceDict [
 ]
 
 { #category : 'setup' }
+JTStructureCreator class >> simpleClassReferenceDict [
+
+	^ Dictionary new
+		  at: #reference put: (Dictionary new
+				   at: #refered put: (Dictionary new
+						    at: #fields put: {  };
+						    yourself);
+				   at: #uniqueId put: 1;
+				   at: #type put: (Dictionary new
+					    at: #name put: 'im.an.Object';
+					    yourself);
+				   yourself);
+		  yourself
+]
+
+{ #category : 'setup' }
 JTStructureCreator class >> simpleFieldDict [
 
 	| fieldDict |
@@ -59,7 +75,9 @@ JTStructureCreator class >> simpleMethodDict [
 
 	^ Dictionary new
 		  at: #name put: #main;
-		  at: #parentType put: 'Pharo';
+		  at: #parentType put: (Dictionary new
+				   at: #name put: 'Pharo';
+				   yourself);
 		  at: #isClassSide put: true;
 		  at: #signature put: 'Pharo.main(String[])';
 		  at: #parameters put: {  };
@@ -69,15 +87,7 @@ JTStructureCreator class >> simpleMethodDict [
 { #category : 'setup' }
 JTStructureCreator class >> simpleObjectReferenceDict [
 
-	^ Dictionary new
-		  at: #reference put: (Dictionary new
-				   at: #refered put: (Dictionary new
-						    at: #fields put: {  };
-						    yourself);
-				   at: #uniqueId put: 1;
-				   at: #type put: 'im.an.Object';
-				   yourself);
-		  yourself
+	^ self simpleClassReferenceDict
 ]
 
 { #category : 'setup' }
@@ -85,7 +95,7 @@ JTStructureCreator class >> simpleParameterDict [
 
 	^ Dictionary new
 		  at: #name put: #args;
-		  at: #type put: #Pharo;
+		  at: #type put: #int;
 		  yourself
 ]
 
@@ -108,7 +118,9 @@ JTStructureCreator class >> simpleStringReferenceDict [
 				   at: #refered put: #yesIAM;
 				   yourself);
 		  at: #uniqueId put: 1;
-		  at: #type put: 'java.lang.String';
+		  at: #type put: (Dictionary new
+			   at: #name put: 'java.lang.String';
+			   yourself);
 		  yourself;
 		  yourself
 ]

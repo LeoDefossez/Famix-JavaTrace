@@ -20,6 +20,48 @@ JavaTraceJsonReaderTest >> setUp [
 			 yourself)
 ]
 
+{ #category : 'classNamed' }
+JavaTraceJsonReaderTest >> testClassCreatedClassIsInTheModel [
+
+	| class |
+	class := reader createClassNamed: 'Myclass[]'.
+	
+	self assert: class isClass.
+	self assert: (reader model includes: class).
+]
+
+{ #category : 'classNamed' }
+JavaTraceJsonReaderTest >> testClassNamedArray [
+
+	| class |
+	"In FamixJava, no differencies are made on typing with an array of a class or with a class"
+	class := reader createClassNamed: 'Myclass[]'.
+
+	self assert: class isStub.
+	self assert: class name equals: #Myclass
+]
+
+{ #category : 'classNamed' }
+JavaTraceJsonReaderTest >> testClassNamedHandlePackages [
+
+	| class |
+	class := reader createClassNamed: 'org.example.Pharo'.
+
+	self assert: class name equals: 'Pharo'.
+	self assert: class typeContainer name equals: 'example'.
+	self assert: class typeContainer parentPackage name equals: 'org'
+]
+
+{ #category : 'classNamed' }
+JavaTraceJsonReaderTest >> testClassNamedNormal [
+	| class name | 
+	
+	class := reader createClassNamed: (name := #Myclass).
+	
+	self assert: class isStub.
+	self assert: class name equals: name.
+]
+
 { #category : 'createArrayArgument' }
 JavaTraceJsonReaderTest >> testCreateArgumentCreatedArgumentIsInTheModel [
 
@@ -47,48 +89,6 @@ JavaTraceJsonReaderTest >> testCreateArgumentWithValue [
 	arg := reader createArgument: JTStructureCreator simpleValueDict.
 	
 	self assert: arg value isNotNil.
-]
-
-{ #category : 'createClassNamed' }
-JavaTraceJsonReaderTest >> testCreateClassCreatedClassIsInTheModel [
-
-	| class |
-	class := reader createClassNamed: 'Myclass[]'.
-	
-	self assert: class isClass.
-	self assert: (reader model includes: class).
-]
-
-{ #category : 'createClassNamed' }
-JavaTraceJsonReaderTest >> testCreateClassNamedArray [
-
-	| class |
-	"In FamixJava, no differencies are made on typing with an array of a class or with a class"
-	class := reader createClassNamed: 'Myclass[]'.
-
-	self assert: class isStub.
-	self assert: class name equals: #Myclass
-]
-
-{ #category : 'createClassNamed' }
-JavaTraceJsonReaderTest >> testCreateClassNamedHandlePackages [
-
-	| class |
-	class := reader createClassNamed: 'org.example.Pharo'.
-
-	self assert: class name equals: 'Pharo'.
-	self assert: class typeContainer name equals: 'example'.
-	self assert: class typeContainer parentPackage name equals: 'org'
-]
-
-{ #category : 'createClassNamed' }
-JavaTraceJsonReaderTest >> testCreateClassNamedNormal [
-	| class name | 
-	
-	class := reader createClassNamed: (name := #Myclass).
-	
-	self assert: class isStub.
-	self assert: class name equals: name.
 ]
 
 { #category : 'createField' }
@@ -378,13 +378,16 @@ JavaTraceJsonReaderTest >> testCreateMethodNotEmptyParameters [
 { #category : 'createMethod' }
 JavaTraceJsonReaderTest >> testCreateMethodParentType [
 	"Create two time the same method, and check if the is only one"
+
 	| method name |
-	method := (reader createMethod: (JTStructureCreator simpleMethodDict
-				  at: #parentType put: (name := #Pharo);
-				  yourself)).
-				
+	method := reader createMethod: (JTStructureCreator simpleMethodDict
+			           at: #parentType put: (Dictionary new
+					            at: #name put: (name := #Pharo);
+					            yourself);
+			           yourself).
+
 	self assert: method parentType isClass.
-	self assert: method parentType name equals: name.
+	self assert: method parentType name equals: name
 ]
 
 { #category : 'createPackage' }
@@ -476,14 +479,16 @@ JavaTraceJsonReaderTest >> testCreateParametersTypingPackage [
 
 	| paramArray type parameters |
 	paramArray := { (JTStructureCreator simpleParameterDict
-		               at: #type put: (type := 'org.example.Pharo');
+		               at: #type put: (Dictionary new
+				                at: #name put: (type := 'org.example.Pharo');
+				                yourself);
 		               yourself) }.
 
 	parameters := reader createParameters: paramArray.
 
 	parameters do: [ :param | self assert: param typing declaredType name equals: 'Pharo' ].
 	parameters do: [ :param | self assert: param typing declaredType typeContainer name equals: 'example' ].
-	parameters do: [ :param | self assert: param typing declaredType typeContainer parentPackage name equals: 'org' ].
+	parameters do: [ :param | self assert: param typing declaredType typeContainer parentPackage name equals: 'org' ]
 ]
 
 { #category : 'createPrimitiveType' }
@@ -748,15 +753,17 @@ JavaTraceJsonReaderTest >> testCreateValueReferenceAlreadyFoundWithoutAReferedVa
 { #category : 'createValueReference' }
 JavaTraceJsonReaderTest >> testCreateValueReferenceChooseClassAsTyping [
 
-	| arrayReferenceDict arrayReference|
+	| arrayReferenceDict arrayReference |
 	arrayReferenceDict := JTStructureCreator simpleArrayReferenceDict at: #reference.
 
 	"Making sure there is a no refered value"
-	arrayReferenceDict at:#type put:'my.app.Pharo'.
-	
+	arrayReferenceDict at: #type put: (Dictionary new
+			 at: #name put: 'my.app.Pharo';
+			 yourself).
+
 	arrayReference := reader createValueReference: arrayReferenceDict.
-	
-	self assert: arrayReference typing declaredType isClass.
+
+	self assert: arrayReference typing declaredType isClass
 ]
 
 { #category : 'createValueReference' }
