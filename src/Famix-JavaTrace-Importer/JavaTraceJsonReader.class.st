@@ -45,6 +45,13 @@ JavaTraceJsonReader class >> registerExternalDropHandler [
 					 inspect ])
 ]
 
+{ #category : 'as yet unclassified' }
+JavaTraceJsonReader >> chooseMethodTypeFrom: aDictionnary [
+
+	aDictionnary at: #isParametric ifPresent: [ :bool | bool ifTrue: [ ^ FamixJavaParametricMethod ] ].
+	^ FamixJavaMethod
+]
+
 { #category : 'instance creation' }
 JavaTraceJsonReader >> createArgument: aCollection [
 	"Instiantiate an argument given to a method in a TraceMethod"
@@ -336,8 +343,9 @@ JavaTraceJsonReader >> initialize [
 { #category : 'as yet unclassified' }
 JavaTraceJsonReader >> instantiateMethodFrom: aDictionnary [
 
-	| method |
-	method := (model newMethodNamed: (aDictionnary at: #name)) isStub: true.
+	| methodType method |
+	methodType := self chooseMethodTypeFrom: aDictionnary.
+	method := (model add: (methodType named: (aDictionnary at: #name))) isStub: true.
 
 	method isClassSide: (aDictionnary at: #isClassSide).
 	method parentType: (self createType: (aDictionnary at: #parentType)).

@@ -376,6 +376,56 @@ JavaTraceJsonReaderTest >> testCreateMethodNotEmptyParameters [
 ]
 
 { #category : 'createMethod' }
+JavaTraceJsonReaderTest >> testCreateMethodParametricAbsent [
+	"Create two time the same method, and check if the is only one"
+
+	| method name |
+	method := reader createMethod: (JTStructureCreator simpleMethodDict
+			           at: #parentType put: (Dictionary new
+					            at: #name put: (name := #Pharo);
+					            yourself);
+			           yourself).
+
+	self assert: method parentType isClass.
+	self assert: method parentType name equals: name.
+	self assert: method isParametricEntity not
+]
+
+{ #category : 'createMethod' }
+JavaTraceJsonReaderTest >> testCreateMethodParametricFalse [
+	"Create two time the same method, and check if the is only one"
+
+	| method name |
+	method := reader createMethod: (JTStructureCreator simpleMethodDict
+			           at: #parentType put: (Dictionary new
+					            at: #name put: (name := #Pharo);
+					            yourself);
+			           at: #isParametric put: false;
+			           yourself).
+
+	self assert: method parentType isClass.
+	self assert: method parentType name equals: name.
+	self assert: method isParametricEntity not
+]
+
+{ #category : 'createMethod' }
+JavaTraceJsonReaderTest >> testCreateMethodParametricTrue [
+	"Create two time the same method, and check if the is only one"
+
+	| method name |
+	method := reader createMethod: (JTStructureCreator simpleMethodDict
+			           at: #parentType put: (Dictionary new
+					            at: #name put: (name := #Pharo);
+					            yourself);
+			           at: #isParametric put: true;
+			           yourself).
+
+	self assert: method parentType isClass.
+	self assert: method parentType name equals: name.
+	self assert: method isParametricEntity
+]
+
+{ #category : 'createMethod' }
 JavaTraceJsonReaderTest >> testCreateMethodParentType [
 	"Create two time the same method, and check if the is only one"
 
