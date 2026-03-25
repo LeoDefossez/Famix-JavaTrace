@@ -265,44 +265,15 @@ JavaTraceJsonReaderTest >> testCreateFieldWithoutMaxDepth [
 ]
 
 { #category : 'createMethod' }
-JavaTraceJsonReaderTest >> testCreateMethodCreateTwoMethodIfDifferentNameButSameType [
+JavaTraceJsonReaderTest >> testCreateMethodCreateTwoMethodIfDifferentSignature [
 	"Create two time the same method, and check if the is only one"
 
-	reader createMethod: JTStructureCreator simpleMethodDict.
-	reader createMethod: (JTStructureCreator simpleMethodDict
-			 at: #name put: #imDIFFERENT;
+	reader ensureCreateMethod: (JTStructureCreator simpleMethodDict
+			 at: #signature put: 'java.foo(String)';
 			 yourself).
-
-	self assert: (reader model entities select: [ :entity | entity isMethod ]) size equals: 2
-]
-
-{ #category : 'createMethod' }
-JavaTraceJsonReaderTest >> testCreateMethodCreateTwoMethodIfDifferentTypeButSameName [
-	"Create two time the same method, and check if the is only one"
-
-	reader createMethod: JTStructureCreator simpleMethodDict.
-	reader createMethod: (JTStructureCreator simpleMethodDict
-			 at: #parentType put: #ImDIFFERENT;
+	reader ensureCreateMethod: (JTStructureCreator simpleMethodDict
+			 at: #signature put: 'java.foo()';
 			 yourself).
-
-	self assert: (reader model entities select: [ :entity | entity isMethod ]) size equals: 2
-]
-
-{ #category : 'createMethod' }
-JavaTraceJsonReaderTest >> testCreateMethodCreateTwoMethodsIfNotTheSameParameters [
-
-	| methodDict method |
-	"create a method making sure parameters is not empty"
-	methodDict := JTStructureCreator simpleMethodDict
-		              at: #parameters put: { JTStructureCreator simpleParameterDict };
-		              yourself.
-	method := reader createMethod: methodDict.
-
-	"create a method making sure parameters is empty"
-	methodDict := JTStructureCreator simpleMethodDict
-		              at: #parameters put: {  };
-		              yourself.
-	method := reader createMethod: methodDict.
 
 	self assert: (reader model entities select: [ :entity | entity isMethod ]) size equals: 2
 ]
@@ -311,7 +282,7 @@ JavaTraceJsonReaderTest >> testCreateMethodCreateTwoMethodsIfNotTheSameParameter
 JavaTraceJsonReaderTest >> testCreateMethodCreatedMethodIsInTheModel [
 
 	| method |
-	method := reader createMethod: JTStructureCreator simpleMethodDict.
+	method := reader ensureCreateMethod: JTStructureCreator simpleMethodDict.
 
 	self assert: method isMethod.
 	self assert: (reader model includes: method)
@@ -320,8 +291,8 @@ JavaTraceJsonReaderTest >> testCreateMethodCreatedMethodIsInTheModel [
 { #category : 'createMethod' }
 JavaTraceJsonReaderTest >> testCreateMethodDontCreateTwice [
 	"Create two time the same method, and check if the is only one"
-	reader createMethod: JTStructureCreator simpleMethodDict.
-	reader createMethod: JTStructureCreator simpleMethodDict.
+	reader ensureCreateMethod: JTStructureCreator simpleMethodDict.
+	reader ensureCreateMethod: JTStructureCreator simpleMethodDict.
 	
 	self assert: (reader model entities select:[:entity | entity isMethod]) size equals: 1
 ]
@@ -334,22 +305,19 @@ JavaTraceJsonReaderTest >> testCreateMethodEmptyParameters [
 	methodDict := JTStructureCreator simpleMethodDict
 		              at: #parameters put: {  };
 		              yourself.
-	method := reader createMethod: methodDict.
+	method := reader ensureCreateMethod: methodDict.
 
 	self assert: method parameters isEmpty
 ]
 
 { #category : 'createMethod' }
 JavaTraceJsonReaderTest >> testCreateMethodIsClassSide [
-	"Create two time the same method, and check if the is only one"
+	"Create two time the same method, and check if only one is created"
 
-	self assert: (reader createMethod: (JTStructureCreator simpleMethodDict
-				  at: #isClassSide put: true;
-				  yourself)) isClassSide.
-
-	self assert: (reader createMethod: (JTStructureCreator simpleMethodDict
-				  at: #isClassSide put: false; at:#name put:#imDIFFERENT;
-				  yourself)) isClassSide not
+	| dict method |
+	dict := JTStructureCreator simpleMethodDict.
+	method := reader ensureCreateMethod: dict.
+	self assert: method identicalTo: (reader ensureCreateMethod: dict)
 ]
 
 { #category : 'createMethod' }
@@ -357,7 +325,7 @@ JavaTraceJsonReaderTest >> testCreateMethodIsStub [
 	"Create two time the same method, and check if the is only one"
 	
 	| method |
-	method := reader createMethod: JTStructureCreator simpleMethodDict.
+	method := reader ensureCreateMethod: JTStructureCreator simpleMethodDict.
 	
 	self assert: method isStub.
 ]
@@ -370,7 +338,7 @@ JavaTraceJsonReaderTest >> testCreateMethodNotEmptyParameters [
 	methodDict := JTStructureCreator simpleMethodDict
 		              at: #parameters put: { JTStructureCreator simpleParameterDict };
 		              yourself.
-	method := reader createMethod: methodDict.
+	method := reader ensureCreateMethod: methodDict.
 
 	self assert: method parameters isNotEmpty
 ]
@@ -380,7 +348,7 @@ JavaTraceJsonReaderTest >> testCreateMethodParametricAbsent [
 	"Create two time the same method, and check if the is only one"
 
 	| method name |
-	method := reader createMethod: (JTStructureCreator simpleMethodDict
+	method := reader ensureCreateMethod: (JTStructureCreator simpleMethodDict
 			           at: #parentType put: (Dictionary new
 					            at: #name put: (name := #Pharo);
 					            yourself);
@@ -396,7 +364,7 @@ JavaTraceJsonReaderTest >> testCreateMethodParametricFalse [
 	"Create two time the same method, and check if the is only one"
 
 	| method name |
-	method := reader createMethod: (JTStructureCreator simpleMethodDict
+	method := reader ensureCreateMethod: (JTStructureCreator simpleMethodDict
 			           at: #parentType put: (Dictionary new
 					            at: #name put: (name := #Pharo);
 					            yourself);
@@ -413,7 +381,7 @@ JavaTraceJsonReaderTest >> testCreateMethodParametricTrue [
 	"Create two time the same method, and check if the is only one"
 
 	| method name |
-	method := reader createMethod: (JTStructureCreator simpleMethodDict
+	method := reader ensureCreateMethod: (JTStructureCreator simpleMethodDict
 			           at: #parentType put: (Dictionary new
 					            at: #name put: (name := #Pharo);
 					            yourself);
@@ -430,7 +398,7 @@ JavaTraceJsonReaderTest >> testCreateMethodParentType [
 	"Create two time the same method, and check if the is only one"
 
 	| method name |
-	method := reader createMethod: (JTStructureCreator simpleMethodDict
+	method := reader ensureCreateMethod: (JTStructureCreator simpleMethodDict
 			           at: #parentType put: (Dictionary new
 					            at: #name put: (name := #Pharo);
 					            yourself);

@@ -146,20 +146,6 @@ JavaTraceJsonReader >> createField: aDictionary [
 	^ field
 ]
 
-{ #category : 'instance creation' }
-JavaTraceJsonReader >> createMethod: aDictionary [
-	"Instantiate a FamixJavaMethod with all given informations"
-
-	| paramTypeNames methodNameDict methodTypesDict |
-	paramTypeNames := (aDictionary at: #parameters) collect: [ :param | param at: #type ].
-
-	methodNameDict := createdMethods at: (aDictionary at: #name) ifAbsentPut: [ Dictionary new ].
-
-	methodTypesDict := methodNameDict at: (aDictionary at: #parentType) ifAbsentPut: [ Dictionary new ].
-
-	^ methodTypesDict at: paramTypeNames ifAbsentPut: [ self instantiateMethodFrom: aDictionary ]
-]
-
 { #category : 'accessing' }
 JavaTraceJsonReader >> createPackageFromStringCollection: aCollection [
 
@@ -248,13 +234,13 @@ JavaTraceJsonReader >> createTraceElement: aDictionary [
 
 	aDictionary
 		at: #method
-		ifPresent: [ :methodDict | line method: (self createMethod: methodDict) ]
+		ifPresent: [ :methodDict | line method: (self ensureCreateMethod: methodDict) ]
 		ifAbsent: [ Error signal: 'MethodCall has no method' ].
 
 	self createArguments: (aDictionary at: #arguments) forTraceMethod: line.
 
 	(aDictionary at: #receiver) ifNotNil: [ :receiver | line receiver: (self createReceiver: receiver) ].
-	line method: (self createMethod: (aDictionary at: #method)).
+	line method: (self ensureCreateMethod: (aDictionary at: #method)).
 
 	^ line
 ]
@@ -328,6 +314,12 @@ JavaTraceJsonReader >> createValueWith: aDictionnary [
 JavaTraceJsonReader >> defaultPackage [
 
 	^ defaultPackage ifNil: [ defaultPackage := model newPackageNamed: '<Default Package>' ]
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> ensureCreateMethod: aDictionary [
+
+	^ createdMethods at: (aDictionary at: #signature) ifAbsentPut: [ self instantiateMethodFrom: aDictionary ]
 ]
 
 { #category : 'initialization' }
