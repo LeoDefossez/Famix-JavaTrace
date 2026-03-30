@@ -24,7 +24,7 @@ JavaTraceJsonReaderTest >> setUp [
 JavaTraceJsonReaderTest >> testClassCreatedClassIsInTheModel [
 
 	| class |
-	class := reader createClassNamed: 'Myclass[]'.
+	class := reader ensureCreateClassNamed: 'Myclass[]'.
 	
 	self assert: class isClass.
 	self assert: (reader model includes: class).
@@ -35,7 +35,7 @@ JavaTraceJsonReaderTest >> testClassNamedArray [
 
 	| class |
 	"In FamixJava, no differencies are made on typing with an array of a class or with a class"
-	class := reader createClassNamed: 'Myclass[]'.
+	class := reader ensureCreateClassNamed: 'Myclass[]'.
 
 	self assert: class isStub.
 	self assert: class name equals: #Myclass
@@ -45,7 +45,7 @@ JavaTraceJsonReaderTest >> testClassNamedArray [
 JavaTraceJsonReaderTest >> testClassNamedHandlePackages [
 
 	| class |
-	class := reader createClassNamed: 'org.example.Pharo'.
+	class := reader ensureCreateClassNamed: 'org.example.Pharo'.
 
 	self assert: class name equals: 'Pharo'.
 	self assert: class typeContainer name equals: 'example'.
@@ -56,7 +56,7 @@ JavaTraceJsonReaderTest >> testClassNamedHandlePackages [
 JavaTraceJsonReaderTest >> testClassNamedNormal [
 	| class name | 
 	
-	class := reader createClassNamed: (name := #Myclass).
+	class := reader ensureCreateClassNamed: (name := #Myclass).
 	
 	self assert: class isStub.
 	self assert: class name equals: name.
@@ -412,7 +412,7 @@ JavaTraceJsonReaderTest >> testCreateMethodParentType [
 JavaTraceJsonReaderTest >> testCreatePackageDefaultPackage [
 
 	| package  |
-	package := reader createPackageFromStringCollection: {  }.
+	package := reader ensureCreatePackageFromStringCollection: {  }.
 
 	self assert: package name equals:  '<Default Package>'.
 ]
@@ -421,7 +421,7 @@ JavaTraceJsonReaderTest >> testCreatePackageDefaultPackage [
 JavaTraceJsonReaderTest >> testCreatePackageFromStringCollection1Element [
 
 	| package |
-	package := reader createPackageFromStringCollection: { 'org' }.
+	package := reader ensureCreatePackageFromStringCollection: { 'org' }.
 
 	self assert: package name equals: 'org'.
 ]
@@ -430,7 +430,7 @@ JavaTraceJsonReaderTest >> testCreatePackageFromStringCollection1Element [
 JavaTraceJsonReaderTest >> testCreatePackageFromStringCollection2Elements [
 
 	| package |
-	package := reader createPackageFromStringCollection: { 'org'. 'example' }.
+	package := reader ensureCreatePackageFromStringCollection: { 'org'. 'example' }.
 
 	self assert: package name equals: 'example'.
 	self assert: package parentPackage name equals: 'org'
@@ -440,8 +440,8 @@ JavaTraceJsonReaderTest >> testCreatePackageFromStringCollection2Elements [
 JavaTraceJsonReaderTest >> testCreatePackageFromStringCollectionReuseExistingPackages [
 
 	| package1 package2 |
-	package1 := reader createPackageFromStringCollection: { 'org'. 'example' }.
-	package2 := reader createPackageFromStringCollection: { 'org'. 'test' }.
+	package1 := reader ensureCreatePackageFromStringCollection: { 'org'. 'example' }.
+	package2 := reader ensureCreatePackageFromStringCollection: { 'org'. 'test' }.
 
 	self assert: package1 parentPackage identicalTo: package2 parentPackage.
 ]
@@ -513,7 +513,7 @@ JavaTraceJsonReaderTest >> testCreateParametersTypingPackage [
 JavaTraceJsonReaderTest >> testCreatePrimitiveTypeCreatedPrimitiveTypeIsInTheModel [
 
 	| primType |
-	primType := reader createPrimitiveType: #int.
+	primType := reader ensureCreatePrimitiveType: #int.
 
 	self assert: primType isPrimitiveType.
 	self assert: (reader model includes: primType)
@@ -523,7 +523,7 @@ JavaTraceJsonReaderTest >> testCreatePrimitiveTypeCreatedPrimitiveTypeIsInTheMod
 JavaTraceJsonReaderTest >> testCreatePrimitiveTypeDeleteSuffix [
 	| primType |
 	"In FamixJava there is no diference in typing with array or single value"
-	primType := reader createPrimitiveType: 'int[]'.
+	primType := reader ensureCreatePrimitiveType: 'int[]'.
 
 	self assert:  primType name equals: #int
 ]
@@ -531,7 +531,7 @@ JavaTraceJsonReaderTest >> testCreatePrimitiveTypeDeleteSuffix [
 { #category : 'createPrimitiveType' }
 JavaTraceJsonReaderTest >> testCreatePrimitiveTypeIsStub [
 	| primType |
-	primType := reader createPrimitiveType: #int.
+	primType := reader ensureCreatePrimitiveType: #int.
 
 	self assert:  primType isStub
 ]

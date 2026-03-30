@@ -15,11 +15,11 @@ Class {
 		'filename',
 		'model',
 		'createdPrimitives',
-		'createdClasses',
 		'createdMethods',
 		'createdReference',
 		'createdSourcesPackages',
-		'defaultPackage'
+		'defaultPackage',
+		'createdTypes'
 	],
 	#category : 'Famix-JavaTrace-Importer',
 	#package : 'Famix-JavaTrace-Importer'
@@ -75,14 +75,9 @@ JavaTraceJsonReader >> createArguments: aDictionary forTraceMethod: aTraceMethod
 	Should be either
 	- accessible and have a value
 	- inaccessible and dont have a value"
-	accessible ~= argValuesDict notNil ifTrue: [
-			Error signal:
-				'Invalid methodCall arguments accessibility or description' ].
+	accessible ~= argValuesDict notNil ifTrue: [ Error signal: 'Invalid methodCall arguments accessibility or description' ].
 
-	accessible
-		ifTrue: [
-				argValuesDict do: [ :argDict |
-					aTraceMethod addArgument: (self createArgument: argDict) ] ]
+	accessible ifTrue: [ argValuesDict do: [ :argDict | aTraceMethod addArgument: (self createArgument: argDict) ] ]
 ]
 
 { #category : 'instance creation' }
@@ -90,27 +85,6 @@ JavaTraceJsonReader >> createArrayValueWith: aCollection [
 	"Instantiate an ArrayValue"
 
 	^ model newArrayValue value: (aCollection ifNotNil: [ self createValueWith: aCollection ])
-]
-
-{ #category : 'instance creation' }
-JavaTraceJsonReader >> createClassNamed: aString [
-
-	^ self createClassNamed: aString withType: FamixJavaClass
-]
-
-{ #category : 'instance creation' }
-JavaTraceJsonReader >> createClassNamed: aString withType: aType [
-
-	| sequence container name |
-	sequence := (aString removeSuffix: '[]') splitOn: $..
-	name := sequence last.
-
-	container := self createPackageFromStringCollection: sequence allButLast.
-	^ createdClasses at: name ifAbsentPut: [
-			  (model add: (aType named: name))
-				  typeContainer: container;
-				  isStub: true;
-				  yourself ]
 ]
 
 { #category : 'instance creation' }
@@ -146,57 +120,13 @@ JavaTraceJsonReader >> createField: aDictionary [
 	^ field
 ]
 
-{ #category : 'accessing' }
-JavaTraceJsonReader >> createPackageFromStringCollection: aCollection [
-
-	| currentParent |
-	"if the collection is empty then return the default package"
-	aCollection ifEmpty: [ ^ self defaultPackage ].
-	
-	"Search for the source package"
-	currentParent := createdSourcesPackages at: aCollection first ifAbsentPut: [ model newPackageNamed: aCollection first ].
-
-	"If we are in a source package, then return it now"
-	aCollection size = 1 ifTrue: [ ^ currentParent ].
-
-	"If in nested package create all and return the deepest one"
-	aCollection allButFirst do: [ :each | currentParent := self createPackageNamed: each withParent: currentParent ].
-	^ currentParent
-]
-
-{ #category : 'accessing' }
-JavaTraceJsonReader >> createPackageNamed: aString withParent: aPackage [
-
-	^ aPackage childEntities detect: [ :each | each name = aString ] ifNone: [
-			  (model newPackageNamed: aString)
-				  parentPackage: aPackage;
-				  yourself ]
-]
-
 { #category : 'instance creation' }
 JavaTraceJsonReader >> createParameters: anArray [
 	"Instantiates all parameters of a method"
 
 	^ anArray collect: [ :param |
 			  
-			  self createTypingFor: (model newParameterNamed: (param at: #name)) with: (self createType: (param at: #type)) ]
-]
-
-{ #category : 'instance creation' }
-JavaTraceJsonReader >> createParametricClassNamed: aString [
-
-	^ self createClassNamed: aString withType: FamixJavaParametricClass
-]
-
-{ #category : 'instance creation' }
-JavaTraceJsonReader >> createPrimitiveType: aString [
-	"Instantiate a PrimitiveType if not already on the model"
-	| name |
-	name := aString removeSuffix: '[]'.
-	^ createdClasses at: name ifAbsentPut: [
-			  (model newPrimitiveTypeNamed: name)
-				  isStub: true;
-				  yourself ]
+			  self createTypingFor: (model newParameterNamed: (param at: #name)) with: (self ensureCreateType: (param at: #type)) ]
 ]
 
 { #category : 'instance creation' }
@@ -205,7 +135,7 @@ JavaTraceJsonReader >> createPrimitiveValue: aDictionary [
 
 	| primVal |
 	primVal := model newPrimitiveValue.
-	self createTypingFor: primVal with: (self createPrimitiveType: (aDictionary at: #type)).
+	self createTypingFor: primVal with: (self ensureCreatePrimitiveType: (aDictionary at: #type)).
 	primVal value: (aDictionary at: #value).
 	^ primVal
 ]
@@ -215,7 +145,7 @@ JavaTraceJsonReader >> createReceiver: aDictionary [
 	"Instantiate the receiver of in a TraceMethod"
 
 	aDictionary at: #reference ifPresent: [ :reference | ^ model newReceiver value: (self createValueReference: (aDictionary at: #reference)) ].
-	aDictionary at: #primitiveValue ifPresent: [ :primitive | Error signal: 'Receiver should not be a primitiveType argument value' ].
+	aDictionary at: #primitiveValue ifPresent: [ :primitive | Error signal: 'Receiver should not be a primitiveType receiver value' ].
 	Error signal: 'Unexcepted receiver value'
 ]
 
@@ -243,18 +173,6 @@ JavaTraceJsonReader >> createTraceElement: aDictionary [
 	line method: (self ensureCreateMethod: (aDictionary at: #method)).
 
 	^ line
-]
-
-{ #category : 'as yet unclassified' }
-JavaTraceJsonReader >> createType: aCollection [
-
-	aCollection isString ifTrue: [ ^ self createPrimitiveType: aCollection ].
-	aCollection isDictionary ifTrue: [
-			aCollection
-				at: #isParametric
-				ifPresent: [ :bool | bool ifTrue: [ ^ self createParametricClassNamed: (aCollection at: #name) ] ].
-			^ self createClassNamed: (aCollection at: #name) ].
-	self error: 'should either be a String for a primitive type or a dictionary for a class'
 ]
 
 { #category : 'as yet unclassified' }
@@ -292,7 +210,7 @@ JavaTraceJsonReader >> createValueReference: aDictionary [
 
 
 
-	type := self createType: (aDictionary at: #type).
+	type := self ensureCreateType: (aDictionary at: #type).
 
 	self createTypingFor: reference with: type.
 
@@ -313,7 +231,33 @@ JavaTraceJsonReader >> createValueWith: aDictionnary [
 { #category : 'accessing' }
 JavaTraceJsonReader >> defaultPackage [
 
-	^ defaultPackage ifNil: [ defaultPackage := model newPackageNamed: '<Default Package>' ]
+	^ createdSourcesPackages
+		  at: '<Default Package>'
+		  ifAbsentPut: [
+		  defaultPackage := model newPackageNamed: '<Default Package>' ]
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> ensureCreateClassNamed: aString [
+
+	^ self ensureCreateClassNamed: aString withType: FamixJavaClass
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> ensureCreateClassNamed: aString withType: aType [
+
+	| sequence container name |
+	sequence := (aString removeSuffix: '[]') splitOn: $..
+	name := sequence last.
+
+	container := self ensureCreatePackageFromStringCollection:
+		             sequence allButLast.
+	^ createdTypes at: name ifAbsentPut: [
+		  model
+			  add: ((aType named: name)
+					   typeContainer: container;
+					   isStub: true;
+					   yourself) ]
 ]
 
 { #category : 'instance creation' }
@@ -322,12 +266,68 @@ JavaTraceJsonReader >> ensureCreateMethod: aDictionary [
 	^ createdMethods at: (aDictionary at: #signature) ifAbsentPut: [ self instantiateMethodFrom: aDictionary ]
 ]
 
+{ #category : 'accessing' }
+JavaTraceJsonReader >> ensureCreatePackageFromStringCollection: aCollection [
+
+	| currentParent |
+	"if the collection is empty then return the default package"
+	aCollection ifEmpty: [ ^ self defaultPackage ].
+	
+	"Search for the source package"
+	currentParent := createdSourcesPackages at: aCollection first ifAbsentPut: [ model newPackageNamed: aCollection first ].
+
+	"If we are in a source package, then return it now"
+	aCollection size = 1 ifTrue: [ ^ currentParent ].
+
+	"If in nested package create all and return the deepest one"
+	aCollection allButFirst do: [ :each | currentParent := self ensureCreatePackageNamed: each withParent: currentParent ].
+	^ currentParent
+]
+
+{ #category : 'accessing' }
+JavaTraceJsonReader >> ensureCreatePackageNamed: aString withParent: aPackage [
+
+	^ aPackage childEntities detect: [ :each | each name = aString ] ifNone: [
+			  (model newPackageNamed: aString)
+				  parentPackage: aPackage;
+				  yourself ]
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> ensureCreateParametricClassNamed: aString [
+
+	^ self ensureCreateClassNamed: aString withType: FamixJavaParametricClass
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> ensureCreatePrimitiveType: aString [
+	"Instantiate a PrimitiveType if not already on the model"
+	| name |
+	name := aString removeSuffix: '[]'.
+	^ createdTypes at: name ifAbsentPut: [
+			  (model newPrimitiveTypeNamed: name)
+				  isStub: true;
+				  yourself ]
+]
+
+{ #category : 'as yet unclassified' }
+JavaTraceJsonReader >> ensureCreateType: aCollection [
+
+	aCollection isString ifTrue: [ ^ self ensureCreatePrimitiveType: aCollection ].
+	aCollection isDictionary ifTrue: [
+			aCollection
+				at: #isParametric
+				ifPresent: [ :bool | bool ifTrue: [ ^ self ensureCreateParametricClassNamed: (aCollection at: #name) ] ].
+			^ self ensureCreateClassNamed: (aCollection at: #name) ].
+	self error: 'should either be a String for a primitive type or a dictionary for a class'
+]
+
 { #category : 'initialization' }
 JavaTraceJsonReader >> initialize [
 
 	createdReference := Dictionary new.
 	createdPrimitives := Dictionary new.
-	createdClasses := Dictionary new.
+	createdTypes := Dictionary new.
 	createdMethods := Dictionary new.
 	createdSourcesPackages := Dictionary new
 ]
@@ -340,7 +340,7 @@ JavaTraceJsonReader >> instantiateMethodFrom: aDictionnary [
 	method := (model add: (methodType named: (aDictionnary at: #name))) isStub: true.
 
 	method isClassSide: (aDictionnary at: #isClassSide).
-	method parentType: (self createType: (aDictionnary at: #parentType)).
+	method parentType: (self ensureCreateType: (aDictionnary at: #parentType)).
 	method signature: (aDictionnary at: #signature).
 
 	(self createParameters: (aDictionnary at: #parameters)) do: [ :param | method addParameter: param ].
