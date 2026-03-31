@@ -263,7 +263,9 @@ JavaTraceJsonReader >> ensureCreateClassNamed: aString withType: aType [
 { #category : 'instance creation' }
 JavaTraceJsonReader >> ensureCreateMethod: aDictionary [
 
-	^ createdMethods at: (aDictionary at: #signature) ifAbsentPut: [ self instantiateMethodFrom: aDictionary ]
+	^ (createdMethods at: ((aDictionary at: #parentType) at: #name) ifAbsentPut: [ Dictionary new ])
+		  at: (aDictionary at: #signature)
+		  ifAbsentPut: [ self instantiateMethodFrom: aDictionary ]
 ]
 
 { #category : 'accessing' }

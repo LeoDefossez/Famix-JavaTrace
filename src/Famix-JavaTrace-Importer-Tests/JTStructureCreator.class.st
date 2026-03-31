@@ -36,6 +36,22 @@ JTStructureCreator class >> simpleClassReferenceDict [
 ]
 
 { #category : 'setup' }
+JTStructureCreator class >> simpleClassReferenceDictWithId: anId [
+
+	^ Dictionary new
+		  at: #reference put: (Dictionary new
+				   at: #refered put: (Dictionary new
+						    at: #fields put: {  };
+						    yourself);
+				   at: #uniqueId put: anId;
+				   at: #type put: (Dictionary new
+					    at: #name put: 'im.an.Object';
+					    yourself);
+				   yourself);
+		  yourself
+]
+
+{ #category : 'setup' }
 JTStructureCreator class >> simpleFieldDict [
 
 	| fieldDict |
@@ -79,7 +95,21 @@ JTStructureCreator class >> simpleMethodDict [
 				   at: #name put: 'Pharo';
 				   yourself);
 		  at: #isClassSide put: true;
-		  at: #signature put: 'Pharo.main(String[])';
+		  at: #signature put: 'main(String[])';
+		  at: #parameters put: {  };
+		  yourself
+]
+
+{ #category : 'setup' }
+JTStructureCreator class >> simpleMethodDictwithParentName: aName [
+
+	^ Dictionary new
+		  at: #name put: #main;
+		  at: #parentType put: (Dictionary new
+				   at: #name put: aName;
+				   yourself);
+		  at: #isClassSide put: true;
+		  at: #signature put: 'main(String[])';
 		  at: #parameters put: {  };
 		  yourself
 ]
@@ -129,7 +159,7 @@ JTStructureCreator class >> simpleStringReferenceDict [
 JTStructureCreator class >> simpleTraceMethodDict [
 
 	^ self simpleMethodCallDict
-		  at: #receiver put: self simpleArrayReferenceDict;
+		  at: #receiver put: self simpleClassReferenceDict;
 		  yourself
 ]
 

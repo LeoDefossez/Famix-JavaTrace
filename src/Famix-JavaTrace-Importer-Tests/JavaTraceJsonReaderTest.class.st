@@ -678,6 +678,21 @@ JavaTraceJsonReaderTest >> testCreateTraceElementCreatedTraceElementIsInTheModel
 ]
 
 { #category : 'createTraceElement' }
+JavaTraceJsonReaderTest >> testCreateTraceElementDuplicateMethod [
+
+	| traceMethod1 traceMethod2 methodCall1 methodCall2 |
+	traceMethod1 := JTStructureCreator simpleTraceMethodDict.
+	traceMethod2 := JTStructureCreator simpleTraceMethodDict
+		                at: #receiver put: (JTStructureCreator simpleClassReferenceDictWithId: 2);
+		                yourself.
+
+	methodCall1 := reader createTraceElement: traceMethod1.
+	methodCall2 := reader createTraceElement: traceMethod2.
+
+	self assert: methodCall1 method identicalTo: methodCall2 method
+]
+
+{ #category : 'createTraceElement' }
 JavaTraceJsonReaderTest >> testCreateTraceElementLinkArgumentsAndParameters [
 
 	| stacklineDict methodDict argsDict stackline |
@@ -727,6 +742,42 @@ JavaTraceJsonReaderTest >> testCreateTraceElementReceiverNotNil [
 	stackline := reader createTraceElement: stacklineDict.
 
 	self assert: stackline receiver isNotNil
+]
+
+{ #category : 'createTraceElement' }
+JavaTraceJsonReaderTest >> testCreateTraceElementSameSignatureDifferentClass [
+
+	| traceMethod1 traceMethod2 methodCall1 methodCall2 |
+	traceMethod1 := JTStructureCreator simpleTraceMethodDict
+		                at: #method put: (JTStructureCreator simpleMethodDictwithParentName: 'Foo');
+		                yourself.
+	traceMethod2 := JTStructureCreator simpleTraceMethodDict
+		                at: #method put: (JTStructureCreator simpleMethodDictwithParentName: 'Bar');
+		                at: #receiver put: (JTStructureCreator simpleClassReferenceDictWithId: 2);
+		                yourself.
+
+	methodCall1 := reader createTraceElement: traceMethod1.
+	methodCall2 := reader createTraceElement: traceMethod2.
+
+	self deny: methodCall1 method identicalTo: methodCall2 method
+]
+
+{ #category : 'createTraceElement' }
+JavaTraceJsonReaderTest >> testCreateTraceElementSameSignatureSameClassNameDifferentPackage [
+
+	| traceMethod1 traceMethod2 methodCall1 methodCall2 |
+	traceMethod1 := JTStructureCreator simpleTraceMethodDict
+		                at: #method put: (JTStructureCreator simpleMethodDictwithParentName: 'org.Foo');
+		                yourself.
+	traceMethod2 := JTStructureCreator simpleTraceMethodDict
+		                at: #method put: (JTStructureCreator simpleMethodDictwithParentName: 'everf.Foo');
+		                at: #receiver put: (JTStructureCreator simpleClassReferenceDictWithId: 2);
+		                yourself.
+
+	methodCall1 := reader createTraceElement: traceMethod1.
+	methodCall2 := reader createTraceElement: traceMethod2.
+
+	self deny: methodCall1 method identicalTo: methodCall2 method
 ]
 
 { #category : 'createTraceElement' }
