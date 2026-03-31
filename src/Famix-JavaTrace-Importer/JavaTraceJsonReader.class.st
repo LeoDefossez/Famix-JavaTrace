@@ -150,7 +150,7 @@ JavaTraceJsonReader >> createReceiver: aDictionary [
 ]
 
 { #category : 'instance creation' }
-JavaTraceJsonReader >> createTraceElement: aDictionary [
+JavaTraceJsonReader >> createTraceMethod: aDictionary [
 	"Instantiate an element of a trace"
 
 	"NOTE : IT IS IMPORTANT TO FOLLOW THE STEPS
@@ -173,6 +173,20 @@ JavaTraceJsonReader >> createTraceElement: aDictionary [
 	line method: (self ensureCreateMethod: (aDictionary at: #method)).
 
 	^ line
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> createTraceMethod: aDictionary nextTo: lastTraceElement [
+
+	| res |
+	res := self createTraceMethod: aDictionary.
+
+	lastTraceElement ifNotNil: [
+			model newInvocation
+				sender: lastTraceElement method;
+				addCandidate: res method ].
+
+	^ res
 ]
 
 { #category : 'as yet unclassified' }
@@ -231,10 +245,10 @@ JavaTraceJsonReader >> createValueWith: aDictionnary [
 { #category : 'accessing' }
 JavaTraceJsonReader >> defaultPackage [
 
-	^ createdSourcesPackages
-		  at: '<Default Package>'
-		  ifAbsentPut: [
-		  defaultPackage := model newPackageNamed: '<Default Package>' ]
+	^ createdSourcesPackages at: '<Default Package>' ifAbsentPut: [
+			  defaultPackage := (model newPackageNamed: '<Default Package>')
+				                    isStub: true;
+				                    yourself ]
 ]
 
 { #category : 'instance creation' }
@@ -272,11 +286,15 @@ JavaTraceJsonReader >> ensureCreateMethod: aDictionary [
 JavaTraceJsonReader >> ensureCreatePackageFromStringCollection: aCollection [
 
 	| currentParent |
+	self flag: 'Simplify this method'.
 	"if the collection is empty then return the default package"
 	aCollection ifEmpty: [ ^ self defaultPackage ].
-	
+
 	"Search for the source package"
-	currentParent := createdSourcesPackages at: aCollection first ifAbsentPut: [ model newPackageNamed: aCollection first ].
+	currentParent := createdSourcesPackages at: aCollection first ifAbsentPut: [
+			                 (model newPackageNamed: aCollection first)
+				                 isStub: true;
+				                 yourself ].
 
 	"If we are in a source package, then return it now"
 	aCollection size = 1 ifTrue: [ ^ currentParent ].
@@ -292,6 +310,7 @@ JavaTraceJsonReader >> ensureCreatePackageNamed: aString withParent: aPackage [
 	^ aPackage childEntities detect: [ :each | each name = aString ] ifNone: [
 			  (model newPackageNamed: aString)
 				  parentPackage: aPackage;
+				  isStub: true;
 				  yourself ]
 ]
 
@@ -379,6 +398,7 @@ JavaTraceJsonReader >> read: json [
 
 	| stack lines valueIndependents |
 	json ifEmpty: [ Error signal: 'The json file is empty' ] ifNotEmpty: [
+			| lastElement |
 			model := FamixJTModel new
 				         name: filename;
 				         yourself.
@@ -389,7 +409,7 @@ JavaTraceJsonReader >> read: json [
 
 			lines do: [ :line |
 					valueIndependents ifTrue: [ createdReference := Dictionary new ].
-					stack addTraceElement: (self createTraceElement: line) ].
+					stack addTraceElement: (lastElement := self createTraceMethod: line nextTo: lastElement) ].
 			"reset moose name to make sure no error appear"
 			model entities do: #resetMooseName ]
 ]

@@ -614,7 +614,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsAccessibleWithValue [
 	argsDict at: #argsValues put: { JTStructureCreator simpleValueDict }.
 	argsDict at: #accessible put: true.
 
-	reader createTraceElement: traceMethodDict .
+	reader createTraceMethod: traceMethodDict .
 ]
 
 { #category : 'createTraceElement' }
@@ -626,7 +626,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsAccessibleWithoutValue
 	argsDict removeKey: #argsValues ifAbsent: ["no problem if already absent"].
 	argsDict at: #accessible put: true.
 
-	self should: [ reader createTraceElement: stacklineDict ] raise: Error
+	self should: [ reader createTraceMethod: stacklineDict ] raise: Error
 ]
 
 { #category : 'createTraceElement' }
@@ -638,7 +638,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsInAccessibleWithValue 
 	argsDict at: #argsValues put: { JTStructureCreator simpleValueDict }.
 	argsDict at: #accessible put: false.
 
-	self should: [ reader createTraceElement: stacklineDict ] raise: Error
+	self should: [ reader createTraceMethod: stacklineDict ] raise: Error
 ]
 
 { #category : 'createTraceElement' }
@@ -653,7 +653,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsInAccessibleWithoutVal
 		ifAbsent: [ "no problem if already absent" ].
 	argsDict at: #accessible put: false.
 
-	reader createTraceElement: stacklineDict
+	reader createTraceMethod: stacklineDict
 ]
 
 { #category : 'createTraceElement' }
@@ -663,7 +663,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementCheckMethodCreation [
 	stacklineDict := JTStructureCreator simpleTraceMethodDict.
 	stacklineDict at: #method put: JTStructureCreator simpleMethodDict.
 
-	methodCall := reader createTraceElement: stacklineDict.
+	methodCall := reader createTraceMethod: stacklineDict.
 	self assert: methodCall method isNotNil
 ]
 
@@ -671,7 +671,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementCheckMethodCreation [
 JavaTraceJsonReaderTest >> testCreateTraceElementCreatedTraceElementIsInTheModel [
 
 	| traceMethod |
-	traceMethod := reader createTraceElement: JTStructureCreator simpleTraceMethodDict.
+	traceMethod := reader createTraceMethod: JTStructureCreator simpleTraceMethodDict.
 
 	self assert: traceMethod class equals: FamixJTTraceMethod.
 	self assert: (reader model includes: traceMethod)
@@ -686,8 +686,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementDuplicateMethod [
 		                at: #receiver put: (JTStructureCreator simpleClassReferenceDictWithId: 2);
 		                yourself.
 
-	methodCall1 := reader createTraceElement: traceMethod1.
-	methodCall2 := reader createTraceElement: traceMethod2.
+	methodCall1 := reader createTraceMethod: traceMethod1.
+	methodCall2 := reader createTraceMethod: traceMethod2.
 
 	self assert: methodCall1 method identicalTo: methodCall2 method
 ]
@@ -704,7 +704,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementLinkArgumentsAndParameters [
 	argsDict := stacklineDict at: #arguments.
 	argsDict at: #argsValues put: { JTStructureCreator simpleValueDict }.
 
-	stackline := reader createTraceElement: stacklineDict.
+	stackline := reader createTraceMethod: stacklineDict.
 
 	self assert: stackline arguments first parameter equals: stackline method parameters first
 ]
@@ -715,7 +715,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementNoMethod [
 	| stacklineDict |
 	stacklineDict := JTStructureCreator simpleTraceMethodDict.
 	stacklineDict removeKey: #method ifAbsent: [ "No problem if already absent" ].
-	self should: [ reader createTraceElement: stacklineDict ] raise: Error
+	self should: [ reader createTraceMethod: stacklineDict ] raise: Error
 ]
 
 { #category : 'createTraceElement' }
@@ -726,7 +726,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementReceiverNil [
 		                 at: #receiver put: nil;
 		                 yourself.
 
-	stackline := reader createTraceElement: stacklineDict.
+	stackline := reader createTraceMethod: stacklineDict.
 
 	self assert: stackline receiver isNil
 ]
@@ -739,7 +739,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementReceiverNotNil [
 		                 at: #receiver put: JTStructureCreator simpleArrayReferenceDict;
 		                 yourself.
 
-	stackline := reader createTraceElement: stacklineDict.
+	stackline := reader createTraceMethod: stacklineDict.
 
 	self assert: stackline receiver isNotNil
 ]
@@ -756,8 +756,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementSameSignatureDifferentClass [
 		                at: #receiver put: (JTStructureCreator simpleClassReferenceDictWithId: 2);
 		                yourself.
 
-	methodCall1 := reader createTraceElement: traceMethod1.
-	methodCall2 := reader createTraceElement: traceMethod2.
+	methodCall1 := reader createTraceMethod: traceMethod1.
+	methodCall2 := reader createTraceMethod: traceMethod2.
 
 	self deny: methodCall1 method identicalTo: methodCall2 method
 ]
@@ -774,8 +774,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementSameSignatureSameClassNameDiffe
 		                at: #receiver put: (JTStructureCreator simpleClassReferenceDictWithId: 2);
 		                yourself.
 
-	methodCall1 := reader createTraceElement: traceMethod1.
-	methodCall2 := reader createTraceElement: traceMethod2.
+	methodCall1 := reader createTraceMethod: traceMethod1.
+	methodCall2 := reader createTraceMethod: traceMethod2.
 
 	self deny: methodCall1 method identicalTo: methodCall2 method
 ]
@@ -786,7 +786,7 @@ JavaTraceJsonReaderTest >> testCreateTraceElementWithNoMethod [
 	| stacklineDict |
 	stacklineDict := JTStructureCreator simpleTraceMethodDict.
 	stacklineDict removeKey: #method ifAbsent: [ "No problem if already absent" ].
-	self should: [ reader createTraceElement: stacklineDict ] raise: Error
+	self should: [ reader createTraceMethod: stacklineDict ] raise: Error
 ]
 
 { #category : 'createValueReference' }
