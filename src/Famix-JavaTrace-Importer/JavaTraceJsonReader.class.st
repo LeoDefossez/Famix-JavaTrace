@@ -121,6 +121,40 @@ JavaTraceJsonReader >> createField: aDictionary [
 ]
 
 { #category : 'instance creation' }
+JavaTraceJsonReader >> createObjectReference: aDictionary [
+	"Instantiate a ValueReference"
+
+	| reference type uniqueId typeName |
+	uniqueId := aDictionary at: #uniqueId.
+
+	"Check alreadyFound case"
+	(aDictionary at: #alreadyFound ifAbsent: [ false ]) ifTrue: [
+			^ createdReference at: uniqueId ifAbsent: [
+					  Error signal: 'The objectReference with ID: ' , uniqueId asString
+						  , ' is indicated to be already found, but is not in the saved references' ] ].
+
+	"Ensure no duplicate creation"
+	reference := createdReference
+		             at: uniqueId
+		             ifPresent: [
+				             Error signal:
+					             'Trying to create an object with ID: ' , uniqueId asString
+					             , ' while an existing ObjectReference already has this ID' ]
+		             ifAbsentPut: [ (self instantiateReferenceEntityFrom: aDictionary) uniqueID: uniqueId ].
+
+	"Fill reference"
+	reference fillFrom: (aDictionary at: #refered) reader: self.
+
+
+
+	type := self ensureCreateType: (aDictionary at: #type).
+
+	self createTypingFor: reference with: type.
+
+	^ reference
+]
+
+{ #category : 'instance creation' }
 JavaTraceJsonReader >> createParameters: anArray [
 	"Instantiates all parameters of a method"
 
@@ -144,7 +178,7 @@ JavaTraceJsonReader >> createPrimitiveValue: aDictionary [
 JavaTraceJsonReader >> createReceiver: aDictionary [
 	"Instantiate the receiver of in a TraceMethod"
 
-	aDictionary at: #reference ifPresent: [ :reference | ^ model newReceiver value: (self createValueReference: (aDictionary at: #reference)) ].
+	aDictionary at: #reference ifPresent: [ :reference | ^ model newReceiver value: (self createObjectReference: (aDictionary at: #reference)) ].
 	aDictionary at: #primitiveValue ifPresent: [ :primitive | Error signal: 'Receiver should not be a primitiveType receiver value' ].
 	Error signal: 'Unexcepted receiver value'
 ]
@@ -198,46 +232,12 @@ JavaTraceJsonReader >> createTypingFor: anObject with: type [
 ]
 
 { #category : 'instance creation' }
-JavaTraceJsonReader >> createValueReference: aDictionary [
-	"Instantiate a ValueReference"
-
-	| reference type uniqueId typeName |
-	uniqueId := aDictionary at: #uniqueId.
-
-	"Check alreadyFound case"
-	(aDictionary at: #alreadyFound ifAbsent: [ false ]) ifTrue: [
-			^ createdReference at: uniqueId ifAbsent: [
-					  Error signal: 'The objectReference with ID: ' , uniqueId asString
-						  , ' is indicated to be already found, but is not in the saved references' ] ].
-
-	"Ensure no duplicate creation"
-	reference := createdReference
-		             at: uniqueId
-		             ifPresent: [
-				             Error signal:
-					             'Trying to create an object with ID: ' , uniqueId asString
-					             , ' while an existing ObjectReference already has this ID' ]
-		             ifAbsentPut: [ (self instantiateReferenceEntityFrom: aDictionary) uniqueID: uniqueId ].
-
-	"Fill reference"
-	reference fillFrom: (aDictionary at: #refered) reader: self.
-
-
-
-	type := self ensureCreateType: (aDictionary at: #type).
-
-	self createTypingFor: reference with: type.
-
-	^ reference
-]
-
-{ #category : 'instance creation' }
 JavaTraceJsonReader >> createValueWith: aDictionnary [
 	"Choose which subTypes of a Value should be instantiated"
 
 	"Looking for either a reference or a primitive type, if neither are present throw an error"
 
-	aDictionnary at: #reference ifPresent: [ :reference | ^ self createValueReference: reference ].
+	aDictionnary at: #reference ifPresent: [ :reference | ^ self createObjectReference: reference ].
 	aDictionnary at: #primitiveValue ifPresent: [ :primitive | ^ self createPrimitiveValue: primitive ].
 	Error signal: 'Unexcepted argument value'
 ]

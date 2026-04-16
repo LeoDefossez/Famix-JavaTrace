@@ -800,7 +800,7 @@ JavaTraceJsonReaderTest >> testCreateValueReferenceAlreadyFoundWithAReferedValue
 			 yourself).
 	arrayReferenceDict at: #alreadyFound put: true.
 
-	self should: [ reader createValueReference: arrayReferenceDict ] raise: Error
+	self should: [ reader createObjectReference: arrayReferenceDict ] raise: Error
 ]
 
 { #category : 'createValueReference' }
@@ -810,13 +810,13 @@ JavaTraceJsonReaderTest >> testCreateValueReferenceAlreadyFoundWithoutAReferedVa
 	arrayReferenceDict := JTStructureCreator simpleArrayReferenceDict at: #reference.
 	arrayReferenceDict at: #alreadyFound put: false.
 	"Create it to make the reader able to find a link with the first appearance"
-	reader createValueReference: arrayReferenceDict.
+	reader createObjectReference: arrayReferenceDict.
 	
 	"Making sure there is a no refered value"
 	arrayReferenceDict removeKey: #refered ifAbsent: [ "No problem if already absent" ].
 	arrayReferenceDict at: #alreadyFound put: true.
 
-	reader createValueReference: arrayReferenceDict
+	reader createObjectReference: arrayReferenceDict
 ]
 
 { #category : 'createValueReference' }
@@ -830,7 +830,7 @@ JavaTraceJsonReaderTest >> testCreateValueReferenceChooseClassAsTyping [
 			 at: #name put: 'my.app.Pharo';
 			 yourself).
 
-	arrayReference := reader createValueReference: arrayReferenceDict.
+	arrayReference := reader createObjectReference: arrayReferenceDict.
 
 	self assert: arrayReference typing declaredType isClass
 ]
@@ -844,7 +844,7 @@ JavaTraceJsonReaderTest >> testCreateValueReferenceChoosePrimitiveTypeAsTyping [
 	"Making sure there is a no refered value"
 	arrayReferenceDict at:#type put:#int.
 	
-	arrayReference := reader createValueReference: arrayReferenceDict.
+	arrayReference := reader createObjectReference: arrayReferenceDict.
 	
 	self assert: arrayReference typing declaredType isPrimitiveType.
 	
@@ -863,7 +863,7 @@ JavaTraceJsonReaderTest >> testCreateValueReferenceNotAlreadyFoundWithAReferedVa
 			 yourself).
 	arrayReferenceDict at: #alreadyFound put: false.
 
-	reader createValueReference: arrayReferenceDict
+	reader createObjectReference: arrayReferenceDict
 ]
 
 { #category : 'createValueReference' }
@@ -876,7 +876,7 @@ JavaTraceJsonReaderTest >> testCreateValueReferenceNotAlreadyFoundWithoutARefere
 	arrayReferenceDict removeKey: #refered ifAbsent: [ "No problem if already absent" ].
 	arrayReferenceDict at: #alreadyFound put: false.
 
-	self should: [ reader createValueReference: arrayReferenceDict ] raise: Error
+	self should: [ reader createObjectReference: arrayReferenceDict ] raise: Error
 ]
 
 { #category : 'createValueWith' }
