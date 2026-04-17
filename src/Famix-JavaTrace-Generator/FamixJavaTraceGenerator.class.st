@@ -169,6 +169,8 @@ FamixJavaTraceGenerator >> defineRelations [
 	traceMethod *- method.
 	traceMethod <>- receiver.
 	traceMethod -* argument.
+	
+	(traceElement property: #parent) *- (traceMethod property: #childrens).
 
 	(assignation property: #left) <>- (assignationLeft property: #assignation).
 	(assignation property: #right) <>- (assignationRight property: #assignation)
