@@ -7,6 +7,7 @@ FamixJavaMethod >> traceMethods [
 	<generated>
 	<derived>
 	<FMProperty: #traceMethods type: #FamixJTTraceMethod opposite: #method>
+	<multivalued>
 	<package: #'Famix-JavaTrace-Entities'>
 	^ self attributeAt: #traceMethods ifAbsentPut: [ FMMultivalueLink on: self opposite: #method: ]
 ]

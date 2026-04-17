@@ -76,6 +76,9 @@ JTStructureCreator class >> simpleMethodCallDict [
 
 	| methodCallDict argsDict methodDict |
 	methodCallDict := Dictionary new.
+	methodCallDict at: #id put: 1.
+	methodCallDict at: #parentId put: -1.
+
 	methodCallDict at: #arguments put: (argsDict := Dictionary new).
 	argsDict at: #argsValues put: {  }.
 
@@ -168,4 +171,8 @@ JTStructureCreator class >> simpleValueDict [
 	"Provide a simple value structure"
 	
 	^ self simplePrimitiveValueDict
+]
+
+{ #category : 'see class side' }
+JTStructureCreator >> seeClassSide [ 
 ]

@@ -600,8 +600,8 @@ JavaTraceJsonReaderTest >> testCreateReceiverWithReference [
 	reader createReceiver: JTStructureCreator simpleArrayReferenceDict 
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsAccessibleWithValue [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodArgumentsAccessibleWithValue [
 	"Smoke test, we just check if createTraceElement act as expected"
 
 	| traceMethodDict argsDict |
@@ -617,8 +617,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsAccessibleWithValue [
 	reader createTraceMethod: traceMethodDict .
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsAccessibleWithoutValue [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodArgumentsAccessibleWithoutValue [
 
 	| stacklineDict argsDict |
 	stacklineDict := JTStructureCreator simpleTraceMethodDict.
@@ -629,8 +629,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsAccessibleWithoutValue
 	self should: [ reader createTraceMethod: stacklineDict ] raise: Error
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsInAccessibleWithValue [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodArgumentsInAccessibleWithValue [
 
 	| stacklineDict argsDict |
 	stacklineDict := JTStructureCreator simpleTraceMethodDict.
@@ -641,8 +641,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsInAccessibleWithValue 
 	self should: [ reader createTraceMethod: stacklineDict ] raise: Error
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsInAccessibleWithoutValue [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodArgumentsInAccessibleWithoutValue [
 	"Smoke test, this test just check if no error happen in this case"
 
 	| stacklineDict argsDict |
@@ -656,8 +656,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementArgumentsInAccessibleWithoutVal
 	reader createTraceMethod: stacklineDict
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementCheckMethodCreation [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodCheckMethodCreation [
 
 	| stacklineDict methodCall |
 	stacklineDict := JTStructureCreator simpleTraceMethodDict.
@@ -667,8 +667,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementCheckMethodCreation [
 	self assert: methodCall method isNotNil
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementCreatedTraceElementIsInTheModel [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodCreatedTraceElementIsInTheModel [
 
 	| traceMethod |
 	traceMethod := reader createTraceMethod: JTStructureCreator simpleTraceMethodDict.
@@ -677,12 +677,14 @@ JavaTraceJsonReaderTest >> testCreateTraceElementCreatedTraceElementIsInTheModel
 	self assert: (reader model includes: traceMethod)
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementDuplicateMethod [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodDuplicateMethod [
 
 	| traceMethod1 traceMethod2 methodCall1 methodCall2 |
 	traceMethod1 := JTStructureCreator simpleTraceMethodDict.
+	"We are forced to put a parentId to the second, because we only allow one method to not have parent, that method is the first one of the trace"
 	traceMethod2 := JTStructureCreator simpleTraceMethodDict
+		                at: #parentId put: (traceMethod1 at: #id);
 		                at: #receiver put: (JTStructureCreator simpleClassReferenceDictWithId: 2);
 		                yourself.
 
@@ -692,8 +694,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementDuplicateMethod [
 	self assert: methodCall1 method identicalTo: methodCall2 method
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementLinkArgumentsAndParameters [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodLinkArgumentsAndParameters [
 
 	| stacklineDict methodDict argsDict stackline |
 	stacklineDict := JTStructureCreator simpleTraceMethodDict.
@@ -709,8 +711,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementLinkArgumentsAndParameters [
 	self assert: stackline arguments first parameter equals: stackline method parameters first
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementNoMethod [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodNoMethod [
 
 	| stacklineDict |
 	stacklineDict := JTStructureCreator simpleTraceMethodDict.
@@ -718,8 +720,39 @@ JavaTraceJsonReaderTest >> testCreateTraceElementNoMethod [
 	self should: [ reader createTraceMethod: stacklineDict ] raise: Error
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementReceiverNil [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodNoParents [
+
+	| traceMethodDict |
+	traceMethodDict := JTStructureCreator simpleTraceMethodDict
+		                   at: #parentId put: -1;
+		                   yourself.
+
+	self assert: (reader createTraceMethod: traceMethodDict) parent isNil
+]
+
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodOnlyFirstMethodHasNoParents [
+
+	
+	| traceMethodDict1 traceMethodDict2 |
+	traceMethodDict1 := JTStructureCreator simpleTraceMethodDict
+		                         at: #parentId put: -1;
+		                         at: #id put: 1;
+		                         yourself.
+	traceMethodDict2 := JTStructureCreator simpleTraceMethodDict
+		                   at: #parentId put: -1;
+		                   at: #id put: 2;
+		                   at: #receiver put: nil;
+		                   yourself.
+
+	 reader createTraceMethod: traceMethodDict1.
+
+	self should: [reader createTraceMethod: traceMethodDict2 ] raise: Error
+]
+
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodReceiverNil [
 
 	| stacklineDict stackline |
 	stacklineDict := JTStructureCreator simpleTraceMethodDict
@@ -731,8 +764,8 @@ JavaTraceJsonReaderTest >> testCreateTraceElementReceiverNil [
 	self assert: stackline receiver isNil
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementReceiverNotNil [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodReceiverNotNil [
 
 	| stacklineDict stackline |
 	stacklineDict := JTStructureCreator simpleTraceMethodDict
@@ -744,15 +777,17 @@ JavaTraceJsonReaderTest >> testCreateTraceElementReceiverNotNil [
 	self assert: stackline receiver isNotNil
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementSameSignatureDifferentClass [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodSameSignatureDifferentClass [
 
 	| traceMethod1 traceMethod2 methodCall1 methodCall2 |
 	traceMethod1 := JTStructureCreator simpleTraceMethodDict
 		                at: #method put: (JTStructureCreator simpleMethodDictwithParentName: 'Foo');
 		                yourself.
+	"We are forced to put a parentId to the second, because we only allow one method to not have parent, that method is the first one of the trace"
 	traceMethod2 := JTStructureCreator simpleTraceMethodDict
 		                at: #method put: (JTStructureCreator simpleMethodDictwithParentName: 'Bar');
+		                at: #parentId put: (traceMethod1 at: #id);
 		                at: #receiver put: (JTStructureCreator simpleClassReferenceDictWithId: 2);
 		                yourself.
 
@@ -762,14 +797,16 @@ JavaTraceJsonReaderTest >> testCreateTraceElementSameSignatureDifferentClass [
 	self deny: methodCall1 method identicalTo: methodCall2 method
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementSameSignatureSameClassNameDifferentPackage [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodSameSignatureSameClassNameDifferentPackage [
 
 	| traceMethod1 traceMethod2 methodCall1 methodCall2 |
 	traceMethod1 := JTStructureCreator simpleTraceMethodDict
 		                at: #method put: (JTStructureCreator simpleMethodDictwithParentName: 'org.Foo');
 		                yourself.
+	"We are forced to put a parentId to the second, because we only allow one method to not have parent, that method is the first one of the trace"
 	traceMethod2 := JTStructureCreator simpleTraceMethodDict
+		                at: #parentId put: (traceMethod1 at: #id);
 		                at: #method put: (JTStructureCreator simpleMethodDictwithParentName: 'everf.Foo');
 		                at: #receiver put: (JTStructureCreator simpleClassReferenceDictWithId: 2);
 		                yourself.
@@ -780,13 +817,23 @@ JavaTraceJsonReaderTest >> testCreateTraceElementSameSignatureSameClassNameDiffe
 	self deny: methodCall1 method identicalTo: methodCall2 method
 ]
 
-{ #category : 'createTraceElement' }
-JavaTraceJsonReaderTest >> testCreateTraceElementWithNoMethod [
+{ #category : 'createTraceMethod' }
+JavaTraceJsonReaderTest >> testCreateTraceMethodWithParents [
 
-	| stacklineDict |
-	stacklineDict := JTStructureCreator simpleTraceMethodDict.
-	stacklineDict removeKey: #method ifAbsent: [ "No problem if already absent" ].
-	self should: [ reader createTraceMethod: stacklineDict ] raise: Error
+	| parentTraceMethodDict traceMethodDict parentTraceMethod |
+	parentTraceMethodDict := JTStructureCreator simpleTraceMethodDict
+		                         at: #parentId put: -1;
+		                         at: #id put: 1;
+		                         yourself.
+	traceMethodDict := JTStructureCreator simpleTraceMethodDict
+		                   at: #parentId put: 1;
+		                   at: #id put: 2;
+		                   at: #receiver put: nil;
+		                   yourself.
+
+	parentTraceMethod := reader createTraceMethod: parentTraceMethodDict.
+
+	self assert: (reader createTraceMethod: traceMethodDict) parent identicalTo: parentTraceMethod
 ]
 
 { #category : 'createValueReference' }
@@ -947,8 +994,9 @@ JavaTraceJsonReaderTest >> testReadValueIndependentsFalseAndNoError [
 				           at: 'alreadyFound' put: true;
 				           yourself);
 		          yourself.
-	
+
 	elem2 := JTStructureCreator simpleTraceMethodDict
+		         at: #parentId put: 1;
 		         at: 'receiver' put: value2;
 		         yourself.
 
@@ -979,6 +1027,7 @@ JavaTraceJsonReaderTest >> testReadValueIndependentsTrueAndNoError [
 		          at: 'alreadyFound' put: false;
 		          yourself.
 	elem2 := JTStructureCreator simpleTraceMethodDict
+		         at: #parentId put: 1;
 		         at: 'receiver' put: value2;
 		         yourself.
 

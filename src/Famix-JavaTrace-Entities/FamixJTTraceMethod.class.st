@@ -11,6 +11,7 @@
 | Relation | Origin | Opposite | Type | Comment |
 |---|
 | `arguments` | `FamixJTTraceMethod` | `traceMethod` | `FamixJTArgument` | |
+| `childrens` | `FamixJTTraceMethod` | `parent` | `FamixJTTraceElement` | |
 | `method` | `FamixJTTraceMethod` | `traceMethods` | `FamixJavaMethod` | |
 
 
@@ -26,9 +27,10 @@ Class {
 	#name : 'FamixJTTraceMethod',
 	#superclass : 'FamixJTTraceElement',
 	#instVars : [
+		'#arguments => FMMany type: #FamixJTArgument opposite: #traceMethod',
+		'#childrens => FMMany type: #FamixJTTraceElement opposite: #parent',
 		'#isArgsAccessible => FMProperty defaultValue: true',
-		'#receiver => FMOne type: #FamixJTReceiver opposite: #traceMethod',
-		'#arguments => FMMany type: #FamixJTArgument opposite: #traceMethod'
+		'#receiver => FMOne type: #FamixJTReceiver opposite: #traceMethod'
 	],
 	#category : 'Famix-JavaTrace-Entities-Entities',
 	#package : 'Famix-JavaTrace-Entities',
@@ -50,6 +52,12 @@ FamixJTTraceMethod >> addArgument: anObject [
 	^ self arguments add: anObject
 ]
 
+{ #category : 'adding' }
+FamixJTTraceMethod >> addChildren: anObject [
+	<generated>
+	^ self childrens add: anObject
+]
+
 { #category : 'accessing' }
 FamixJTTraceMethod >> arguments [
 	"Relation named: #arguments type: #FamixJTArgument opposite: #traceMethod"
@@ -64,6 +72,22 @@ FamixJTTraceMethod >> arguments: anObject [
 
 	<generated>
 	arguments value: anObject
+]
+
+{ #category : 'accessing' }
+FamixJTTraceMethod >> childrens [
+	"Relation named: #childrens type: #FamixJTTraceElement opposite: #parent"
+
+	<generated>
+	<derived>
+	^ childrens
+]
+
+{ #category : 'accessing' }
+FamixJTTraceMethod >> childrens: anObject [
+
+	<generated>
+	childrens value: anObject
 ]
 
 { #category : 'accessing' }
