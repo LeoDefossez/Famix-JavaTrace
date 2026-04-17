@@ -7,6 +7,11 @@
 |---|
 | `trace` | `FamixJTTraceElement` | `traceElements` | `FamixJTTrace` | |
 
+### Other
+| Relation | Origin | Opposite | Type | Comment |
+|---|
+| `parent` | `FamixJTTraceElement` | `childrens` | `FamixJTTraceMethod` | |
+
 
 
 "
@@ -16,6 +21,7 @@ Class {
 	#traits : 'TEntityMetaLevelDependency',
 	#classTraits : 'TEntityMetaLevelDependency classTrait',
 	#instVars : [
+		'#parent => FMOne type: #FamixJTTraceMethod opposite: #childrens',
 		'#trace => FMOne type: #FamixJTTrace opposite: #traceElements'
 	],
 	#category : 'Famix-JavaTrace-Entities-Entities',
@@ -30,6 +36,21 @@ FamixJTTraceElement class >> annotation [
 	<package: #'Famix-JavaTrace-Entities'>
 	<generated>
 	^ self
+]
+
+{ #category : 'accessing' }
+FamixJTTraceElement >> parent [
+	"Relation named: #parent type: #FamixJTTraceMethod opposite: #childrens"
+
+	<generated>
+	^ parent
+]
+
+{ #category : 'accessing' }
+FamixJTTraceElement >> parent: anObject [
+
+	<generated>
+	parent := anObject
 ]
 
 { #category : 'accessing' }

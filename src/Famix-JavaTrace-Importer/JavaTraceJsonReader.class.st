@@ -19,7 +19,8 @@ Class {
 		'createdReference',
 		'createdSourcesPackages',
 		'defaultPackage',
-		'createdTypes'
+		'createdTypes',
+		'createdElements'
 	],
 	#category : 'Famix-JavaTrace-Importer',
 	#package : 'Famix-JavaTrace-Importer'
@@ -172,21 +173,22 @@ JavaTraceJsonReader >> createTraceMethod: aDictionary [
 	(aDictionary at: #receiver) ifNotNil: [ :receiver | line receiver: (self createReceiver: receiver) ].
 	line method: (self ensureCreateMethod: (aDictionary at: #method)).
 
+	"Linking this method and its parents, in both the static and dynamic model version"
+
+	createdElements
+		at: (aDictionary at: #parentId)
+		ifPresent: [ :parent | "static"
+				model newInvocation
+					sender: parent method;
+					addCandidate: line method.
+				"dynamic"
+				parent addChildren: line ]
+		ifAbsent: [ "no parents, should only happens for the first method of the trace"
+				((aDictionary at: #parentId) < 0 and: [ createdElements isEmpty ]) ifFalse: [
+					self error: 'Element of id ' , (aDictionary at: #parentId) asString, ' does not exists' ] ].
+			
+	createdElements at: (aDictionary at: #id) put: line.
 	^ line
-]
-
-{ #category : 'instance creation' }
-JavaTraceJsonReader >> createTraceMethod: aDictionary nextTo: lastTraceElement [
-
-	| res |
-	res := self createTraceMethod: aDictionary.
-
-	lastTraceElement ifNotNil: [
-			model newInvocation
-				sender: lastTraceElement method;
-				addCandidate: res method ].
-
-	^ res
 ]
 
 { #category : 'as yet unclassified' }
@@ -350,7 +352,8 @@ JavaTraceJsonReader >> initialize [
 	createdPrimitives := Dictionary new.
 	createdTypes := Dictionary new.
 	createdMethods := Dictionary new.
-	createdSourcesPackages := Dictionary new
+	createdSourcesPackages := Dictionary new.
+	createdElements := Dictionary new
 ]
 
 { #category : 'as yet unclassified' }
@@ -398,7 +401,6 @@ JavaTraceJsonReader >> read: json [
 
 	| stack lines valueIndependents |
 	json ifEmpty: [ Error signal: 'The json file is empty' ] ifNotEmpty: [
-			| lastElement |
 			model := FamixJTModel new
 				         name: filename;
 				         yourself.
@@ -409,7 +411,7 @@ JavaTraceJsonReader >> read: json [
 
 			lines do: [ :line |
 					valueIndependents ifTrue: [ createdReference := Dictionary new ].
-					stack addTraceElement: (lastElement := self createTraceMethod: line nextTo: lastElement) ].
+					stack addTraceElement: (self createTraceMethod: line) ].
 			"reset moose name to make sure no error appear"
 			model entities do: #resetMooseName ]
 ]
