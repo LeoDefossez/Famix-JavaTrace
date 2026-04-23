@@ -348,16 +348,22 @@ JavaTraceJsonReader >> ensureCreatePrimitiveType: aString [
 { #category : 'as yet unclassified' }
 JavaTraceJsonReader >> ensureCreateType: aCollection [
 
-	| isParametric isInterface name |
+	| isParametric isInterface name anonymousParentType result |
 	aCollection isString ifTrue: [ ^ self ensureCreatePrimitiveType: aCollection ].
 	aCollection isDictionary ifTrue: [
 			isParametric := aCollection at: #isParametric ifAbsent: false.
 			isInterface := aCollection at: #isInterface ifAbsent: false.
+			anonymousParentType := aCollection at: #anonymousParentType ifAbsent: nil.
 			name := aCollection at: #name.
-			(isParametric and: [ isInterface ]) ifTrue: [ ^ self ensureCreateParametricInterfaceNamed: name ].
-			(isParametric not and: [ isInterface ]) ifTrue: [ ^ self ensureCreateInterfaceNamed: name ].
-			(isParametric and: [ isInterface not ]) ifTrue: [ ^ self ensureCreateParametricClassNamed: name ].
-			^ self ensureCreateClassNamed: name ].
+
+			result := (isParametric and: [ isInterface ]) ifTrue: [ self ensureCreateParametricInterfaceNamed: name ].
+			result := (isParametric not and: [ isInterface ]) ifTrue: [ self ensureCreateInterfaceNamed: name ].
+			result := (isParametric and: [ isInterface not ]) ifTrue: [ self ensureCreateParametricClassNamed: name ].
+			result := (isParametric not and: [ isInterface not ]) ifTrue: [ self ensureCreateClassNamed: name ].
+			self flag: #TODO. "The super inheritance is created two times..."
+			anonymousParentType ifNotNil: [
+				FamixJavaInheritance source: result target: (self ensureCreateType: anonymousParentType) ].
+			^ result ].
 	self error: 'should either be a String for a primitive type or a dictionary for a class'
 ]
 
