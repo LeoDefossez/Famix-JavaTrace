@@ -256,11 +256,17 @@ JavaTraceJsonReader >> defaultPackage [
 { #category : 'instance creation' }
 JavaTraceJsonReader >> ensureCreateClassNamed: aString [
 
-	^ self ensureCreateClassNamed: aString withType: FamixJavaClass
+	^ self ensureCreateInterfaceOrClassNamed: aString withType: FamixJavaClass
 ]
 
 { #category : 'instance creation' }
-JavaTraceJsonReader >> ensureCreateClassNamed: aString withType: aType [
+JavaTraceJsonReader >> ensureCreateInterfaceNamed: aString [
+
+	^ self ensureCreateInterfaceOrClassNamed: aString withType: FamixJavaInterface
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> ensureCreateInterfaceOrClassNamed: aString withType: aType [
 
 	| sequence container name |
 	sequence := (aString removeSuffix: '[]') splitOn: $..
@@ -319,7 +325,13 @@ JavaTraceJsonReader >> ensureCreatePackageNamed: aString withParent: aPackage [
 { #category : 'instance creation' }
 JavaTraceJsonReader >> ensureCreateParametricClassNamed: aString [
 
-	^ self ensureCreateClassNamed: aString withType: FamixJavaParametricClass
+	^ self ensureCreateInterfaceOrClassNamed: aString withType: FamixJavaParametricClass
+]
+
+{ #category : 'instance creation' }
+JavaTraceJsonReader >> ensureCreateParametricInterfaceNamed: aString [
+
+	^ self ensureCreateInterfaceOrClassNamed: aString withType: FamixJavaParametricInterface
 ]
 
 { #category : 'instance creation' }
@@ -336,12 +348,16 @@ JavaTraceJsonReader >> ensureCreatePrimitiveType: aString [
 { #category : 'as yet unclassified' }
 JavaTraceJsonReader >> ensureCreateType: aCollection [
 
+	| isParametric isInterface name |
 	aCollection isString ifTrue: [ ^ self ensureCreatePrimitiveType: aCollection ].
 	aCollection isDictionary ifTrue: [
-			aCollection
-				at: #isParametric
-				ifPresent: [ :bool | bool ifTrue: [ ^ self ensureCreateParametricClassNamed: (aCollection at: #name) ] ].
-			^ self ensureCreateClassNamed: (aCollection at: #name) ].
+			isParametric := aCollection at: #isParametric ifAbsent: false.
+			isInterface := aCollection at: #isInterface ifAbsent: false.
+			name := aCollection at: #name.
+			(isParametric and: [ isInterface ]) ifTrue: [ ^ self ensureCreateParametricInterfaceNamed: name ].
+			(isParametric not and: [ isInterface ]) ifTrue: [ ^ self ensureCreateInterfaceNamed: name ].
+			(isParametric and: [ isInterface not ]) ifTrue: [ ^ self ensureCreateParametricClassNamed: name ].
+			^ self ensureCreateClassNamed: name ].
 	self error: 'should either be a String for a primitive type or a dictionary for a class'
 ]
 
