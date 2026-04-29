@@ -348,23 +348,37 @@ JavaTraceJsonReader >> ensureCreatePrimitiveType: aString [
 { #category : 'as yet unclassified' }
 JavaTraceJsonReader >> ensureCreateType: aCollection [
 
-	| isParametric isInterface name anonymousParentType result |
+	| isParametric isInterface name anonymousParentType result parentType |
 	aCollection isString ifTrue: [ ^ self ensureCreatePrimitiveType: aCollection ].
-	aCollection isDictionary ifTrue: [
-			isParametric := aCollection at: #isParametric ifAbsent: false.
-			isInterface := aCollection at: #isInterface ifAbsent: false.
-			anonymousParentType := aCollection at: #anonymousParentType ifAbsent: nil.
-			name := aCollection at: #name.
+	aCollection isDictionary ifFalse: [
+		self error: 'should either be a String for a primitive type or a dictionary for a class' ].
 
-			result := (isParametric and: [ isInterface ]) ifTrue: [ self ensureCreateParametricInterfaceNamed: name ].
-			result := (isParametric not and: [ isInterface ]) ifTrue: [ self ensureCreateInterfaceNamed: name ].
-			result := (isParametric and: [ isInterface not ]) ifTrue: [ self ensureCreateParametricClassNamed: name ].
-			result := (isParametric not and: [ isInterface not ]) ifTrue: [ self ensureCreateClassNamed: name ].
-			self flag: #TODO. "The super inheritance is created two times..."
-			anonymousParentType ifNotNil: [
-				FamixJavaInheritance source: result target: (self ensureCreateType: anonymousParentType) ].
-			^ result ].
-	self error: 'should either be a String for a primitive type or a dictionary for a class'
+	isParametric := aCollection at: #isParametric ifAbsent: false.
+	isInterface := aCollection at: #isInterface ifAbsent: false.
+	name := aCollection at: #name.
+
+
+	result := isInterface
+		          ifTrue: [
+				          isParametric
+					          ifTrue: [ self ensureCreateParametricInterfaceNamed: name ]
+					          ifFalse: [ self ensureCreateInterfaceNamed: name ] ]
+		          ifFalse: [
+				          isParametric
+					          ifTrue: [ self ensureCreateParametricClassNamed: name ]
+					          ifFalse: [ self ensureCreateClassNamed: name ] ].
+
+	anonymousParentType := aCollection at: #anonymousParentType ifAbsent: nil.
+
+	anonymousParentType ifNotNil: [
+			parentType := self ensureCreateType: anonymousParentType.
+
+			FamixJavaInheritance new
+				subclass: result;
+				superclass: parentType;
+				mooseModel: result mooseModel ].
+
+	^ result
 ]
 
 { #category : 'initialization' }
