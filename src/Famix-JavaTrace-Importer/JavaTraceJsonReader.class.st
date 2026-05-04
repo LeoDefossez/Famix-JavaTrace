@@ -373,10 +373,20 @@ JavaTraceJsonReader >> ensureCreateType: aCollection [
 	anonymousParentType ifNotNil: [
 			parentType := self ensureCreateType: anonymousParentType.
 
-			FamixJavaInheritance new
-				subclass: result;
-				superclass: parentType;
-				mooseModel: result mooseModel ].
+			parentType isInterface
+				ifTrue: [
+						FamixJavaImplementation new
+							source: result;
+							target: parentType;
+							mooseModel: model ]
+				ifFalse: [
+						FamixJavaInheritance new
+							source: result;
+							target: parentType;
+							mooseModel: model ] ].
+
+
+
 
 	^ result
 ]
