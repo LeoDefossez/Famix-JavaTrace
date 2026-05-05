@@ -126,8 +126,11 @@ JavaTraceJsonReader >> createParameters: anArray [
 	"Instantiates all parameters of a method"
 
 	^ anArray collect: [ :param |
-			  
-			  self createTypingFor: (model newParameterNamed: (param at: #name)) with: (self ensureCreateType: (param at: #type)) ]
+			  self
+				  createTypingFor: ((model newParameterNamed: (param at: #name))
+						   isStub: true;
+						   yourself)
+				  with: (self ensureCreateType: (param at: #type)) ]
 ]
 
 { #category : 'instance creation' }

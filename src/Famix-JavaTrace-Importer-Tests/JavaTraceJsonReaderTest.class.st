@@ -467,6 +467,17 @@ JavaTraceJsonReaderTest >> testCreateParametersEmpty [
 ]
 
 { #category : 'createParameters' }
+JavaTraceJsonReaderTest >> testCreateParametersIsStub [
+
+	| paramArray parameters |
+	paramArray := { JTStructureCreator simpleParameterDict }.
+
+	parameters := reader createParameters: paramArray.
+
+	parameters do: [ :param | self assert: param isStub ]
+]
+
+{ #category : 'createParameters' }
 JavaTraceJsonReaderTest >> testCreateParametersName [
 
 	| paramArray name parameters |
